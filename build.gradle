@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+
+    id 'application'
+}
+
+group 'com.divisionind'
+version '0.0.0.1'
+mainClassName = 'com.divisionind.fdb.FapBot'
+
+sourceCompatibility = 1.8
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': project.name,
+                'Implementation-Version': version,
+                'Main-Class': mainClassName
+    }
+    version = ''
+    baseName = project.name + '-all'
+    from { configurations.compile.filter{ it.getName().endsWith(".jar") }.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+task stage(dependsOn: ['clean', 'fatJar'])
+fatJar.mustRunAfter clean
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    compile 'net.dv8tion:JDA:3.8.1_447'
+}
