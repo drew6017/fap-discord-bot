@@ -25,8 +25,14 @@ public class BotEvent extends ListenerAdapter {
         if (event.getAuthor().isBot()) return;
 
         // check for bot command prefix
-        if (event.getMessage().getContentRaw().startsWith(FapBot.PREFIX)) {
+        String raw = event.getMessage().getContentRaw();
+        if (raw.startsWith(FapBot.PREFIX)) {
             event.getChannel().sendMessage("Yep, got your message!").queue();
+            return;
+        }
+
+        if (raw.toLowerCase().contains("fap")) {
+            event.getChannel().sendMessage("Did someone say fap? I like to have fun and party!").queue();
         }
     }
 }

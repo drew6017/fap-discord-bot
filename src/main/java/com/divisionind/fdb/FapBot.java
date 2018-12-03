@@ -31,7 +31,7 @@ public class FapBot {
     private static JDA jda;
 
     public static void main(String[] args) {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tT %4$s] [%3$s] %5$s %n");
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tT] [%3$s/%4$s] %5$s %n");
         log.info("Initializing...");
 
         // start JDA
