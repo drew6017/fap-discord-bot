@@ -19,20 +19,30 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 
 import javax.security.auth.login.LoginException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class FapBot {
 
     public static final Logger log = Logger.getLogger("FapBot");
     public static final String PREFIX = "$";
+    public static final String DELIMITER = "\\s+";
 
     private static final String TOKEN = System.getenv("DISCORD_BOT_TOKEN");
 
     private static JDA jda;
+    protected static List<ACommand> commands;
 
     public static void main(String[] args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tT] [%3$s/%4$s] %5$s %n");
         log.info("Initializing...");
+
+        // register all default commands
+        commands = new ArrayList<>();
+        registerCMDS(new Commands.Help(),
+                new Commands.Fap());
 
         // start JDA
         try {
@@ -47,9 +57,15 @@ public class FapBot {
             e.printStackTrace();
         }
 
-        log.info("Created shutdown hook");
+        log.info("Creating shutdown hook");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (jda != null) jda.shutdownNow();
         }));
+
+        log.info("FapBot is now running.");
+    }
+
+    public static void registerCMDS(ACommand... cmds) {
+        commands.addAll(Arrays.asList(cmds));
     }
 }

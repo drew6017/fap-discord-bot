@@ -27,7 +27,27 @@ public class BotEvent extends ListenerAdapter {
         // check for bot command prefix
         String raw = event.getMessage().getContentRaw();
         if (raw.startsWith(FapBot.PREFIX)) {
-            event.getChannel().sendMessage("Yep, got your message!").queue();
+            raw = raw.substring(1); // remove prefix
+
+            // split into arguments
+            String[] args;
+            if (raw.contains(FapBot.DELIMITER)) {
+                args = raw.split(FapBot.DELIMITER);
+            } else args = new String[] {raw};
+
+            // search for and run command
+            for (ACommand cmd : FapBot.commands) {
+                if (cmd.matchesAlias(args[0])) {
+                    try {
+                        cmd.execute(event, args);
+                    } catch (Exception e) {
+                        FapBot.log.severe(String.format("An error occurred whilst attempting to run the command: %s", args[0]));
+                        e.printStackTrace();
+                    }
+                    return;
+                }
+            }
+            event.getChannel().sendMessage(String.format("Command not found. See a full list of commands with %shelp", FapBot.PREFIX)).queue();
             return;
         }
 
