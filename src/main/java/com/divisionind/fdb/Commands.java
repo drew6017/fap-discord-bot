@@ -22,7 +22,7 @@ public class Commands {
         @Override
         public void execute(MessageReceivedEvent event, String[] args) {
             StringBuilder sb = new StringBuilder();
-            sb.append("Commands often have an alias for quick usage separated by a comma. Here is a list of commands:\n");
+            sb.append("Commands often have several aliases separated by commas for quick usage. Here is a list of commands:\n");
             for (ACommand c : FapBot.commands) {
                 String[] aliases = c.aliases();
                 sb.append("**");

@@ -15,8 +15,10 @@
 
 package com.divisionind.fdb;
 
+import com.divisionind.fdb.scheduler.AtomicScheduler;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.entities.Game;
 
 import javax.security.auth.login.LoginException;
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ public class FapBot {
     private static final String TOKEN = System.getenv("DISCORD_BOT_TOKEN");
 
     private static JDA jda;
+    private static AtomicScheduler scheduler;
+
     protected static List<ACommand> commands;
 
     public static void main(String[] args) {
@@ -56,6 +60,8 @@ public class FapBot {
             jda = null;
             e.printStackTrace();
         }
+
+        jda.getPresence().setGame(Game.playing(String.format("%shelp", PREFIX)));
 
         log.info("Creating shutdown hook");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
