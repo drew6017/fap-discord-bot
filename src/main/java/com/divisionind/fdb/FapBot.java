@@ -15,7 +15,6 @@
 
 package com.divisionind.fdb;
 
-import com.divisionind.fdb.scheduler.AtomicScheduler;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
@@ -35,7 +34,7 @@ public class FapBot {
     private static final String TOKEN = System.getenv("DISCORD_BOT_TOKEN");
 
     private static JDA jda;
-    private static AtomicScheduler scheduler;
+    //private static AtomicScheduler scheduler; // TODO implement
 
     protected static List<ACommand> commands;
 

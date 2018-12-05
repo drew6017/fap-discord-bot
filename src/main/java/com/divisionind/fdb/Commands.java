@@ -17,6 +17,8 @@ package com.divisionind.fdb;
 
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.util.Random;
+
 public class Commands {
     public static class Help extends ACommand {
         @Override
@@ -49,7 +51,21 @@ public class Commands {
     public static class Fap extends ACommand {
         @Override
         public void execute(MessageReceivedEvent event, String[] args) {
-            respond(event, "*fap fap fap fap fap fap fap fap fap*... Oh, sorry, didn't see you there.");
+            Random randy = new Random();
+            String msg;
+            int key = randy.nextInt(3);
+            if (key == 0 && event.getAuthor().getId().equals("246069907467403264")) key = 1; // prevents drew6017 from getting bad messages
+            switch (key) {
+                case 0:
+                    msg = "Leave me alone...";
+                    break;
+                case 1:
+                    msg = "Fapping is good for the body, proven by science. https://www.latlmes.com/breaking/fapping-is-good-for-you-1";
+                    break;
+                default:
+                    msg = "*fap fap fap fap fap fap fap fap fap*... Oh, sorry, didn't see you there.";
+            }
+            respond(event, msg);
         }
 
         @Override
