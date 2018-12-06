@@ -15,6 +15,8 @@
 
 package com.divisionind.fdb;
 
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public abstract class ACommand {
@@ -35,5 +37,12 @@ public abstract class ACommand {
 
     public static void respond(MessageReceivedEvent event, String msg) {
         event.getChannel().sendMessage(msg).queue();
+    }
+
+    public static boolean hasRole(Member m, String role) {
+        for (Role r : m.getRoles()) {
+            if (r.getName().equals(role)) return true;
+        }
+        return false;
     }
 }
