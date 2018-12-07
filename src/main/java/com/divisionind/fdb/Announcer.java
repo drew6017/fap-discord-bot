@@ -46,11 +46,11 @@ public class Announcer implements Runnable {
         this.tasks.clear();
         try {
             Connection con = FapBot.newConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT reminders, time FROM group_faps");
+            PreparedStatement ps = con.prepareStatement("SELECT time, reminders FROM group_faps");
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Date date = new Date(rs.getTimestamp(1).getTime());
-                String[] reminders = rs.getString(3).split(",");
+                Date date = new Date(rs.getTimestamp("time").getTime());
+                String[] reminders = rs.getString("reminders").split(",");
                 Random randy = new Random();
                 for (String reminder : reminders) {
                     TimerTask t = new AnnounceTask(randy, date);
@@ -78,6 +78,7 @@ public class Announcer implements Runnable {
             FapBot.log.severe("Could not refresh group fap alarms.");
             e.printStackTrace();
         }
+        FapBot.log.info("Updated announcement events.");
     }
 
     private class AnnounceTask extends TimerTask {
