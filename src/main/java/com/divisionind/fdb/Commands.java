@@ -138,7 +138,7 @@ public class Commands {
                             try {
                                 Connection con = FapBot.newConnection();
                                 PreparedStatement ps = con.prepareStatement("INSERT INTO group_faps VALUES (?,?,?)");
-                                ps.setDate(1, new java.sql.Date(task.datetime.getTime()));
+                                ps.setTimestamp(1, new java.sql.Timestamp(task.datetime.getTime()));
                                 ps.setShort(2, (short)0);
                                 ps.setString(3, task.reminders);
                                 ps.executeUpdate();
@@ -228,7 +228,7 @@ public class Commands {
                     PreparedStatement ps = c.prepareStatement("INSERT INTO unsubscribed VALUES(?,?,?)");
                     ps.setLong(1, author.getIdLong());
                     ps.setString(2, author.getName());
-                    ps.setDate(3, new java.sql.Date(System.currentTimeMillis()));
+                    ps.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
                     ps.executeUpdate();
                     ps.close();
                     toggle_status = "off";
