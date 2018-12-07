@@ -16,14 +16,11 @@
 package com.divisionind.fdb;
 
 import com.divisionind.fdb.scheduler.AtomicScheduler;
-import com.divisionind.fdb.scheduler.DaemonThreadFactory;
-import com.divisionind.fdb.web.WebServer;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
 
 import javax.security.auth.login.LoginException;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -45,7 +42,6 @@ public class FapBot {
 
     private static JDA jda;
     private static AtomicScheduler scheduler;
-    private static WebServer webServer;
     private static String db_user;
     private static String db_pass;
     private static String db_url;
@@ -104,17 +100,6 @@ public class FapBot {
             log.severe("Could not parse JAWSDB_MARIA_URL information. The application will NOT have database access.");
             e.printStackTrace();
         }
-
-        // creates webserver
-        try {
-            webServer = new WebServer(Integer.parseInt(System.getenv("PORT")));
-        } catch (IOException e) {
-            log.severe(String.format("An error occurred whilst creating the web server. %s", e.getLocalizedMessage()));
-            e.printStackTrace();
-        }
-        Thread webWorker = new Thread(() -> webServer.getServer().start());
-        webWorker.setName("Web Server");
-        webWorker.start();
 
         log.info("FapBot is now running.");
     }

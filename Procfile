@@ -1,1 +1,1 @@
-web: java -jar build/libs/fap-discord-bot-all.jar
+worker: java -jar build/libs/fap-discord-bot-all.jar
