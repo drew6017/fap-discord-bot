@@ -19,14 +19,13 @@ import com.divisionind.fdb.scheduler.AtomicScheduler;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.User;
 
 import javax.security.auth.login.LoginException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,6 +44,7 @@ public class FapBot {
 
     private static JDA jda;
     private static AtomicScheduler scheduler;
+    private static Announcer announcer;
     private static String db_user;
     private static String db_pass;
     private static String db_url;
@@ -62,7 +62,8 @@ public class FapBot {
         registerCMDS(new Commands.Help(),
                 new Commands.Fap(),
                 new Commands.GroupFap(),
-                new Commands.Unsubscribe());
+                new Commands.Unsubscribe(),
+                new Commands.Info());
 
         // start JDA
         try {
@@ -105,6 +106,10 @@ public class FapBot {
             e.printStackTrace();
         }
 
+        // creating announcement events from db
+        announcer = new Announcer();
+        scheduler.repeating(announcer, 0L, 30L);
+
         log.info("FapBot is now running.");
     }
 
@@ -122,23 +127,5 @@ public class FapBot {
 
     public static JDA getJDA() {
         return jda;
-    }
-
-    public static void massPrivateMessage(String msg, List<Guild> guilds) throws SQLException {
-        Connection con = newConnection();
-        PreparedStatement ps = con.prepareStatement("SELECT discord_id FROM unsubscribed WHERE discord_id=?");
-        if (guilds == null) guilds = jda.getGuilds();
-        for (Guild g : guilds) {
-            for (Member member : g.getMembers()) {
-                User user = member.getUser(); // possibly cache this to a blacklist ArrayList to reduce database calls. This was not done to reduce ram consumption if the list grows large
-                ps.setLong(1, user.getIdLong());
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(msg).queue());
-                rs.close();
-            }
-        }
-
-        ps.close();
-        con.close();
     }
 }

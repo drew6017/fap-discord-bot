@@ -252,4 +252,21 @@ public class Commands {
             return "toggles private messages from this bot";
         }
     }
+
+    protected static class Info extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            respond(event, "A group fap is a meet-and-greet session between members of the Fun and Partying (FAP) discord server.");
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"info", "i"};
+        }
+
+        @Override
+        public String desc() {
+            return "tells you what the heck a group fap is";
+        }
+    }
 }
