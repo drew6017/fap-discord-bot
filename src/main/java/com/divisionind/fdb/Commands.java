@@ -151,7 +151,7 @@ public class Commands {
 
         @Override
         public String[] aliases() {
-            return new String[] {"groupfap, gf"};
+            return new String[] {"groupfap", "gf"};
         }
 
         @Override
