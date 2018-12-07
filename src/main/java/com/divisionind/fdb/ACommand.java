@@ -40,6 +40,7 @@ public abstract class ACommand {
     }
 
     public static boolean hasRole(Member m, String role) {
+        if (m == null) return false;
         for (Role r : m.getRoles()) {
             if (r.getName().equals(role)) return true;
         }
