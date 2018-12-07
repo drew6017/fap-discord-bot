@@ -19,13 +19,14 @@ import com.divisionind.fdb.scheduler.AtomicScheduler;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.User;
 
 import javax.security.auth.login.LoginException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +37,8 @@ public class FapBot {
     public static final Logger log = Logger.getLogger("FapBot");
     public static final String PREFIX = "$";
     public static final String DELIMITER = " ";
+    public static final long DISCORD_GUILD_ID = 425464794368442371L;
+    public static final long DISCORD_GROUP_FAP_TC_ID = 505460272115351552L;
 
     private static final String TOKEN = System.getenv("DISCORD_BOT_TOKEN");
     private static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
@@ -76,13 +79,13 @@ public class FapBot {
 
         jda.getPresence().setGame(Game.playing(String.format("%shelp", PREFIX)));
 
-        log.info("Creating shutdown hook");
+        log.info("Creating shutdown hook...");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (jda != null) jda.shutdownNow();
         }));
 
         // load db driver
-        log.info("Loading JDBC (MySQL) driver");
+        log.info("Loading JDBC (MySQL) driver...");
         try {
             Class.forName(JDBC_DRIVER);
         } catch (ClassNotFoundException e) {
@@ -115,5 +118,27 @@ public class FapBot {
 
     public static AtomicScheduler getScheduler() {
         return scheduler;
+    }
+
+    public static JDA getJDA() {
+        return jda;
+    }
+
+    public static void massPrivateMessage(String msg, List<Guild> guilds) throws SQLException {
+        Connection con = newConnection();
+        PreparedStatement ps = con.prepareStatement("SELECT discord_id FROM unsubscribed WHERE discord_id=?");
+        if (guilds == null) guilds = jda.getGuilds();
+        for (Guild g : guilds) {
+            for (Member member : g.getMembers()) {
+                User user = member.getUser(); // possibly cache this to a blacklist ArrayList to reduce database calls. This was not done to reduce ram consumption if the list grows large
+                ps.setLong(1, user.getIdLong());
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(msg).queue());
+                rs.close();
+            }
+        }
+
+        ps.close();
+        con.close();
     }
 }

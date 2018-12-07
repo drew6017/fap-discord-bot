@@ -98,7 +98,7 @@ public class Commands {
 
         @Override
         public void execute(MessageReceivedEvent event, String[] args) {
-            if (hasRole(event.getMember(), "Verified Fat Cock")) {
+            if (hasRole(event.getMember(), event.getAuthor(), "Verified Fat Cock")) {
                 if (args.length > 1) {
                     if (args[1].equalsIgnoreCase("time")) {
                         if (args.length == 2) {
@@ -134,8 +134,24 @@ public class Commands {
                         if (task == null || task.reminders == null || task.msg == null || task.datetime == null) {
                             respond(event, "You must first finish building the group fap in order to publish it.");
                         } else {
+
+                            try {
+                                Connection con = FapBot.newConnection();
+                                PreparedStatement ps = con.prepareStatement("INSERT INTO group_faps VALUES (?,?,?)");
+                                ps.setDate(1, new java.sql.Date(task.datetime.getTime()));
+                                ps.setShort(2, (short)0);
+                                ps.setString(3, task.reminders);
+                                ps.executeUpdate();
+                                ps.close();
+                                con.close();
+                            } catch (SQLException e) {
+                                respond(event, "Error creating group fap in database.");
+                                e.printStackTrace();
+                                return;
+                            }
+                            FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getTextChannelById(FapBot.DISCORD_GROUP_FAP_TC_ID).sendMessage(task.msg).queue();
                             task.remove(event.getMember());
-                            respond(event, "This feature is not yet ready lol. Sorry."); // TODO
+                            respond(event, "Group fap has been created!");
                         }
                     }
                 } else respond(event, String.format("Incorrect usage. Correct usage: %sgf <subcommand>. Valid subcommands are: **time, msg, reminders, publish**", FapBot.PREFIX));

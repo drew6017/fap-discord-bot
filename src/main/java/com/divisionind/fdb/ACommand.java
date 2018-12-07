@@ -15,8 +15,10 @@
 
 package com.divisionind.fdb;
 
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public abstract class ACommand {
@@ -39,9 +41,15 @@ public abstract class ACommand {
         event.getChannel().sendMessage(msg).queue();
     }
 
-    public static boolean hasRole(Member m, String role) {
-        if (m == null) return false;
-        for (Role r : m.getRoles()) {
+    public static boolean hasRole(Member member, User user, String role) {
+        if (member == null) {
+            if (user == null) return false;
+            for (Guild guild : user.getMutualGuilds()) {
+                if (hasRole(guild.getMember(user), null, role)) return true;
+            }
+            return false;
+        }
+        for (Role r : member.getRoles()) {
             if (r.getName().equals(role)) return true;
         }
         return false;
