@@ -16,8 +16,13 @@
 package com.divisionind.fdb;
 
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -181,6 +186,54 @@ public class Commands {
                 buildingFaps.remove(m);
                 removeTask.cancel(true);
             }
+        }
+    }
+
+    protected static class Unsubscribe extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            User author = event.getAuthor();
+            String toggle_status;
+            try {
+                Connection c = FapBot.newConnection();
+                PreparedStatement st = c.prepareStatement("SELECT discord_id FROM unsubscribed WHERE discord_id=?");
+                st.setLong(1, author.getIdLong());
+                ResultSet rs = st.executeQuery();
+                boolean existed = rs.next();
+                rs.close();
+                st.close();
+                if (existed) {
+                    st = c.prepareStatement("DELETE FROM unsubscribed WHERE discord_id=?");
+                    st.setLong(1, author.getIdLong());
+                    st.executeUpdate();
+                    st.close();
+                    toggle_status = "on";
+                } else {
+                    PreparedStatement ps = c.prepareStatement("INSERT INTO unsubscribed VALUES(?,?,?)");
+                    ps.setLong(1, author.getIdLong());
+                    ps.setString(2, author.getName());
+                    ps.setDate(3, new java.sql.Date(System.currentTimeMillis()));
+                    ps.executeUpdate();
+                    ps.close();
+                    toggle_status = "off";
+                }
+                c.close();
+            } catch (SQLException e) {
+                FapBot.log.warning("Could not access database. Was there an error connecting?");
+                e.printStackTrace();
+                toggle_status = "error";
+            }
+            respond(event, String.format("Toggled receive private messages from bot to **%s**", toggle_status));
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"unsubscribe", "unsub"};
+        }
+
+        @Override
+        public String desc() {
+            return "toggles private messages from this bot";
         }
     }
 }

@@ -58,7 +58,8 @@ public class FapBot {
         commands = new ArrayList<>();
         registerCMDS(new Commands.Help(),
                 new Commands.Fap(),
-                new Commands.GroupFap());
+                new Commands.GroupFap(),
+                new Commands.Unsubscribe());
 
         // start JDA
         try {
