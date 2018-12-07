@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class FapBot {
@@ -108,7 +109,7 @@ public class FapBot {
 
         // creating announcement events from db
         announcer = new Announcer();
-        scheduler.repeating(announcer, 0L, 30L);
+        scheduler.repeating(announcer, 0L, 30L, TimeUnit.MINUTES);
 
         log.info("FapBot is now running.");
     }

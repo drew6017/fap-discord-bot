@@ -211,21 +211,21 @@ public class Commands {
             User author = event.getAuthor();
             String toggle_status;
             try {
-                Connection c = FapBot.newConnection();
-                PreparedStatement st = c.prepareStatement("SELECT discord_id FROM unsubscribed WHERE discord_id=?");
+                Connection con = FapBot.newConnection();
+                PreparedStatement st = con.prepareStatement("SELECT discord_id FROM unsubscribed WHERE discord_id=?");
                 st.setLong(1, author.getIdLong());
                 ResultSet rs = st.executeQuery();
                 boolean existed = rs.next();
                 rs.close();
                 st.close();
                 if (existed) {
-                    st = c.prepareStatement("DELETE FROM unsubscribed WHERE discord_id=?");
+                    st = con.prepareStatement("DELETE FROM unsubscribed WHERE discord_id=?");
                     st.setLong(1, author.getIdLong());
                     st.executeUpdate();
                     st.close();
                     toggle_status = "on";
                 } else {
-                    PreparedStatement ps = c.prepareStatement("INSERT INTO unsubscribed VALUES(?,?,?)");
+                    PreparedStatement ps = con.prepareStatement("INSERT INTO unsubscribed VALUES(?,?,?)");
                     ps.setLong(1, author.getIdLong());
                     ps.setString(2, author.getName());
                     ps.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
@@ -233,7 +233,7 @@ public class Commands {
                     ps.close();
                     toggle_status = "off";
                 }
-                c.close();
+                con.close();
             } catch (SQLException e) {
                 FapBot.log.warning("Could not access database. Was there an error connecting?");
                 e.printStackTrace();

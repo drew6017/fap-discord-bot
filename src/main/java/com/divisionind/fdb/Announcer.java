@@ -71,6 +71,9 @@ public class Announcer implements Runnable {
                     this.alarm.schedule(t, date.getTime() - amount);
                 }
             }
+            rs.close();
+            ps.close();
+            con.close();
         } catch (SQLException e) {
             FapBot.log.severe("Could not refresh group fap alarms.");
             e.printStackTrace();
@@ -105,6 +108,7 @@ public class Announcer implements Runnable {
             } else msg = rm.getText(dateFormat.format(event));
 
             // TODO announce message, this is to test for stability before mass sending messages
+            // send to massPrivateMessage and the group-faps channel in F.A.P.
             FapBot.log.info(msg);
         }
     }
