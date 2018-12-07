@@ -107,7 +107,7 @@ public class FapBot {
 
         // creates webserver
         try {
-            webServer = new WebServer(80);
+            webServer = new WebServer(Integer.parseInt(System.getenv("PORT")));
         } catch (IOException e) {
             log.severe(String.format("An error occurred whilst creating the web server. %s", e.getLocalizedMessage()));
             e.printStackTrace();
