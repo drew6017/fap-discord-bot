@@ -35,7 +35,7 @@ public class FapBot {
 
     public static final Logger log = Logger.getLogger("FapBot");
     public static final String PREFIX = "$";
-    public static final String DELIMITER = "\\s+";
+    public static final String DELIMITER = " ";
 
     private static final String TOKEN = System.getenv("DISCORD_BOT_TOKEN");
     private static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
