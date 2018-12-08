@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,7 @@ public class Announcer implements Runnable {
     private static final String UNSUBSCRIBE_END_TAG = String.format("*To stop receiving messages like this, reply %sunsub*", FapBot.PREFIX);
 
     private Timer alarm;
-    private List<TimerTask> tasks;
+    private List<AnnounceTask> tasks;
 
     public Announcer() {
         this.alarm = new Timer("Group Fap Alarm", false);
@@ -41,7 +42,7 @@ public class Announcer implements Runnable {
 
     @Override
     public void run() {
-        for (TimerTask t : tasks) t.cancel();
+        for (AnnounceTask t : tasks) t.cancel();
         this.alarm.purge();
         this.tasks.clear();
         try {
@@ -53,7 +54,6 @@ public class Announcer implements Runnable {
                 String[] reminders = rs.getString("reminders").split(",");
                 Random randy = new Random();
                 for (String reminder : reminders) {
-                    TimerTask t = new AnnounceTask(randy, date);
                     char[] rca = reminder.toCharArray();
                     char unit = rca[rca.length-1];
                     long amount = Long.parseLong(reminder.substring(0, reminder.length() - 1));
@@ -67,8 +67,9 @@ public class Announcer implements Runnable {
                         case 'H': // hour
                             amount = TimeUnit.HOURS.toMillis(amount);
                     }
+                    AnnounceTask t = new AnnounceTask(randy, date, date.getTime() - amount);
                     tasks.add(t);
-                    this.alarm.schedule(t, date.getTime() - amount);
+                    this.alarm.schedule(t, t.triggerTime);
                 }
             }
             rs.close();
@@ -78,7 +79,15 @@ public class Announcer implements Runnable {
             FapBot.log.severe("Could not refresh group fap alarms.");
             e.printStackTrace();
         }
-        FapBot.log.info("Updated announcement events.");
+        AnnounceTask soonest = null;
+        for (AnnounceTask t : tasks) {
+            if (soonest == null) {
+                if (System.currentTimeMillis() < t.triggerTime) soonest = t;
+            } else
+            if (soonest.triggerTime > t.triggerTime && System.currentTimeMillis() < soonest.triggerTime) soonest = t;
+        }
+        String time = soonest == null ? "never." : String.format("in %s minutes.", NumberFormat.getNumberInstance().format(TimeUnit.MILLISECONDS.toMinutes(soonest.triggerTime - System.currentTimeMillis())));
+        FapBot.log.info(String.format("Updated announcement events. Next announcement is %s", time));
     }
 
     private class AnnounceTask extends TimerTask {
@@ -89,10 +98,12 @@ public class Announcer implements Runnable {
 
         private Random randy;
         private Date event;
+        private long triggerTime;
 
-        private AnnounceTask(Random randy, Date event) {
+        private AnnounceTask(Random randy, Date event, long triggerTime) {
             this.randy = randy;
             this.event = event;
+            this.triggerTime = triggerTime;
         }
 
         @Override

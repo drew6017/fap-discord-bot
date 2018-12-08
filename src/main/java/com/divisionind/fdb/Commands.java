@@ -149,7 +149,7 @@ public class Commands {
                                 e.printStackTrace();
                                 return;
                             }
-                            FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getTextChannelById(FapBot.DISCORD_GROUP_FAP_TC_ID).sendMessage(task.msg).queue();
+                            if (!task.msg.equals("")) FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getTextChannelById(FapBot.DISCORD_GROUP_FAP_TC_ID).sendMessage(task.msg).queue();
                             task.remove(event.getMember());
                             respond(event, "Group fap has been created!");
                         }
