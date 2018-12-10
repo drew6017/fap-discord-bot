@@ -134,7 +134,6 @@ public class Commands {
                         if (task == null || task.reminders == null || task.msg == null || task.datetime == null) {
                             respond(event, "You must first finish building the group fap in order to publish it.");
                         } else {
-
                             try {
                                 Connection con = FapBot.newConnection();
                                 PreparedStatement ps = con.prepareStatement("INSERT INTO group_faps VALUES (?,?,?)");
@@ -151,6 +150,7 @@ public class Commands {
                             }
                             if (!task.msg.equals("")) FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getTextChannelById(FapBot.DISCORD_GROUP_FAP_TC_ID).sendMessage(task.msg).queue();
                             task.remove(event.getMember());
+                            FapBot.getAnnouncer().run(); // updates announcer with newly created event
                             respond(event, "Group fap has been created!");
                         }
                     }

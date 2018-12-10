@@ -39,6 +39,7 @@ public class FapBot {
     public static final String DELIMITER = " ";
     public static final long DISCORD_GUILD_ID = 425464794368442371L;
     public static final long DISCORD_GROUP_FAP_TC_ID = 505460272115351552L;
+    public static final int SCHEDULER_THREADS = 2;
 
     private static final String TOKEN = System.getenv("DISCORD_BOT_TOKEN");
     private static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
@@ -56,7 +57,7 @@ public class FapBot {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tT] [%3$s/%4$s] %5$s %n");
         log.info("Initializing...");
 
-        scheduler = new AtomicScheduler();
+        scheduler = new AtomicScheduler(SCHEDULER_THREADS);
 
         // register all default commands
         commands = new ArrayList<>();
@@ -124,6 +125,10 @@ public class FapBot {
 
     public static AtomicScheduler getScheduler() {
         return scheduler;
+    }
+
+    public static Announcer getAnnouncer() {
+        return announcer;
     }
 
     public static JDA getJDA() {

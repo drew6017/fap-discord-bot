@@ -25,25 +25,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class Announcer implements Runnable {
 
     private static final String UNSUBSCRIBE_END_TAG = String.format("*To stop receiving messages like this, reply %sunsub*", FapBot.PREFIX);
 
-    private Timer alarm;
     private List<AnnounceTask> tasks;
 
     public Announcer() {
-        this.alarm = new Timer("Group Fap Alarm", false);
         this.tasks = new ArrayList<>();
     }
 
     @Override
     public void run() {
-        for (AnnounceTask t : tasks) t.cancel();
-        this.alarm.purge();
+        for (AnnounceTask t : tasks) t.future.cancel(false);
         this.tasks.clear();
         try {
             Connection con = FapBot.newConnection();
@@ -51,25 +52,36 @@ public class Announcer implements Runnable {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Date date = new Date(rs.getTimestamp("time").getTime());
-                String[] reminders = rs.getString("reminders").split(",");
+                String rem = rs.getString("reminders");
+                rem = rem.toUpperCase();
+                String[] reminders;
+                if (rem.contains(",")) reminders = rem.split(","); else reminders = new String[] {rem};
                 Random randy = new Random();
                 for (String reminder : reminders) {
                     char[] rca = reminder.toCharArray();
+                    if (rca.length < 2) continue;
                     char unit = rca[rca.length-1];
                     long amount = Long.parseLong(reminder.substring(0, reminder.length() - 1));
-                    switch (unit) {
-                        case 'D': // day
-                            amount = TimeUnit.DAYS.toMillis(amount);
-                            break;
-                        case 'M': // minute
-                            amount = TimeUnit.MINUTES.toMillis(amount);
-                            break;
-                        case 'H': // hour
-                            amount = TimeUnit.HOURS.toMillis(amount);
+                    try {
+                        switch (unit) {
+                            case 'D': // day
+                                amount = TimeUnit.DAYS.toMillis(amount);
+                                break;
+                            case 'M': // minute
+                                amount = TimeUnit.MINUTES.toMillis(amount);
+                                break;
+                            case 'H': // hour
+                                amount = TimeUnit.HOURS.toMillis(amount);
+                                break;
+                            default:
+                                throw new IllegalStateException("Unit of time not specified in reminder.");
+                        }
+                    } catch (IllegalStateException e) {
+                        FapBot.log.warning(e.getLocalizedMessage());
+                        continue;
                     }
-                    AnnounceTask t = new AnnounceTask(randy, date, date.getTime() - amount);
-                    tasks.add(t);
-                    this.alarm.schedule(t, t.triggerTime);
+                    AnnounceTask t = new AnnounceTask(randy, date, amount);
+                    tasks.add(t.schedule());
                 }
             }
             rs.close();
@@ -90,7 +102,7 @@ public class Announcer implements Runnable {
         FapBot.log.info(String.format("Updated announcement events. Next announcement is %s", time));
     }
 
-    private class AnnounceTask extends TimerTask {
+    private class AnnounceTask implements Runnable {
 
         private final SimpleDateFormat DATE_FORMAT_FAR = new SimpleDateFormat("MM/dd/yyyy hh:mmaaa z");
         private final SimpleDateFormat DATE_FORMAT_SAME_WEEK = new SimpleDateFormat("EEEE hh:mmaaa z");
@@ -99,11 +111,14 @@ public class Announcer implements Runnable {
         private Random randy;
         private Date event;
         private long triggerTime;
+        private long amount;
+        private ScheduledFuture future;
 
-        private AnnounceTask(Random randy, Date event, long triggerTime) {
+        private AnnounceTask(Random randy, Date event, long amount) {
             this.randy = randy;
             this.event = event;
-            this.triggerTime = triggerTime;
+            this.amount = amount;
+            this.triggerTime = event.getTime() - this.amount;
         }
 
         @Override
@@ -122,6 +137,11 @@ public class Announcer implements Runnable {
             // TODO announce message, this is to test for stability before mass sending messages
             // send to massPrivateMessage and the group-faps channel in F.A.P.
             FapBot.log.info(msg);
+        }
+
+        private AnnounceTask schedule() {
+            this.future = FapBot.getScheduler().delay(this, amount);
+            return this;
         }
     }
 
