@@ -81,7 +81,7 @@ public class Announcer implements Runnable {
                         continue;
                     }
                     AnnounceTask t = new AnnounceTask(randy, date, amount);
-                    tasks.add(t.schedule());
+                    if (t.getTimeTill() > 0) tasks.add(t.schedule());
                 }
             }
             rs.close();
@@ -98,7 +98,7 @@ public class Announcer implements Runnable {
             } else
             if (soonest.triggerTime > t.triggerTime && System.currentTimeMillis() < soonest.triggerTime) soonest = t;
         }
-        String time = soonest == null ? "never." : String.format("in %s minutes.", NumberFormat.getNumberInstance().format(TimeUnit.MILLISECONDS.toMinutes(soonest.triggerTime - System.currentTimeMillis())));
+        String time = soonest == null ? "never." : String.format("in %s minutes.", NumberFormat.getNumberInstance().format(TimeUnit.MILLISECONDS.toMinutes(soonest.getTimeTill())));
         FapBot.log.info(String.format("Updated announcement events. Next announcement is %s", time));
     }
 
@@ -111,14 +111,12 @@ public class Announcer implements Runnable {
         private Random randy;
         private Date event;
         private long triggerTime;
-        private long amount;
         private ScheduledFuture future;
 
         private AnnounceTask(Random randy, Date event, long amount) {
             this.randy = randy;
             this.event = event;
-            this.amount = amount;
-            this.triggerTime = event.getTime() - this.amount;
+            this.triggerTime = event.getTime() - amount;
         }
 
         @Override
@@ -140,8 +138,12 @@ public class Announcer implements Runnable {
         }
 
         private AnnounceTask schedule() {
-            this.future = FapBot.getScheduler().delay(this, amount);
+            this.future = FapBot.getScheduler().delay(this, getTimeTill());
             return this;
+        }
+
+        private long getTimeTill() { // time till event in millis
+            return this.triggerTime - System.currentTimeMillis();
         }
     }
 
