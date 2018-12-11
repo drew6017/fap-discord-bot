@@ -25,10 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -128,13 +125,17 @@ public class Announcer implements Runnable {
             if (timeTill > TimeUnit.HOURS.toMillis(12L)) dateFormat = DATE_FORMAT_SAME_WEEK; else dateFormat = DATE_FORMAT_SAME_DAY;
 
             String msg;
+            dateFormat.setTimeZone(TimeZone.getTimeZone("CST6CDT"));
             if (dateFormat.equals(DATE_FORMAT_SAME_DAY)) {
                 msg = rm.getText("today at " + dateFormat.format(event));
             } else msg = rm.getText(dateFormat.format(event));
 
-            // TODO announce message, this is to test for stability before mass sending messages
-            // send to massPrivateMessage and the group-faps channel in F.A.P.
-            FapBot.log.info(msg);
+            try {
+                massPrivateMessage(msg, FapBot.getJDA().getGuilds());
+            } catch (SQLException e) {
+                FapBot.log.warning("Error sending out mass private message. " + e.getLocalizedMessage());
+                e.printStackTrace();
+            }
         }
 
         private AnnounceTask schedule() {
