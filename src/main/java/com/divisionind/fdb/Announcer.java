@@ -178,7 +178,7 @@ public class Announcer implements Runnable {
                 User user = member.getUser(); // possibly cache this to a blacklist ArrayList to reduce database calls. This was not done to reduce ram consumption if the list grows large
                 ps.setLong(1, user.getIdLong());
                 ResultSet rs = ps.executeQuery();
-                if (rs.next()) user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(msg).queue());
+                if (!rs.next()) user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(msg).queue());
                 rs.close();
             }
         }
