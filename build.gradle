@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.divisionind'
-version '0.1.4'
+version '0.1.5'
 mainClassName = 'com.divisionind.fdb.FapBot'
 
 sourceCompatibility = 1.8

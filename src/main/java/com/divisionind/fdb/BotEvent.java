@@ -15,6 +15,8 @@
 
 package com.divisionind.fdb;
 
+import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
@@ -54,5 +56,15 @@ public class BotEvent extends ListenerAdapter {
         if (raw.toLowerCase().contains("fap")) {
             event.getChannel().sendMessage("Did someone say fap? I like to have fun and party!").queue();
         }
+    }
+
+    @Override
+    public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
+        event.getGuild().getSystemChannel().sendMessage(String.format("%s has left the discord for some stupid reason.", event.getMember().getEffectiveName())).queue();
+    }
+
+    @Override
+    public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+        event.getUser().openPrivateChannel().queue(pmc -> pmc.sendMessage("Hi and welcome to the Fun and partying (F.A.P) discord server. As our name implies, we just like to have fun here (and party). So feel free to reach out and make friends with anyone on the discord.").queue());
     }
 }
