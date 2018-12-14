@@ -313,7 +313,7 @@ public class Commands {
                     Date date = new Date(rs.getTimestamp("time").getTime());
                     SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm aaa z");
                     dateFormat.setTimeZone(TimeZone.getTimeZone("CST6CDT"));
-                    respond(event, String.format("Next group fap is %s", dateFormat.format(date)));
+                    respond(event, String.format("The next group fap is %s", dateFormat.format(date)));
                 } else respond(event, "There are no upcoming group faps. Sorry D:");
                 rs.close();
                 ps.close();
