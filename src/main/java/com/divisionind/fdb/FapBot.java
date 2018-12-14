@@ -65,7 +65,9 @@ public class FapBot {
                 new Commands.Fap(),
                 new Commands.GroupFap(),
                 new Commands.Unsubscribe(),
-                new Commands.Info());
+                new Commands.Info(),
+                new Commands.PrivateMessage(),
+                new Commands.When());
 
         // start JDA
         try {

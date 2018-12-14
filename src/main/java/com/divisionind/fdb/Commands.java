@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -267,6 +268,70 @@ public class Commands {
         @Override
         public String desc() {
             return "tells you what the heck a group fap is";
+        }
+    }
+
+    protected static class PrivateMessage extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            if (event.getAuthor().getIdLong() == 246069907467403264L) {
+                if (args.length < 2) {
+                    respond(event, "You must specify a message to send to everyone.");
+                    return;
+                }
+                StringBuilder sb = new StringBuilder();
+                for (int i = 2;i<args.length;i++) sb.append(args[i]).append(" ");
+                try {
+                    Announcer.massPrivateMessage(sb.toString(), FapBot.getJDA().getGuilds());
+                } catch (SQLException e) {
+                    respond(event, String.format("An error occurred whilst sending the mass private message: %s", e.getLocalizedMessage()));
+                    e.printStackTrace();
+                }
+            } else respond(event, "This command is reserved for drew6017 only. Sorry.");
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"privatemsg", "pm"};
+        }
+
+        @Override
+        public String desc() {
+            return "sends out a mass private message to all members of all connected discords";
+        }
+    }
+
+    protected static class When extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            try {
+                Connection conn = FapBot.newConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT time, MIN(time) FROM group_faps WHERE time>?");
+                ps.setLong(1, System.currentTimeMillis());
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    Date date = new Date(rs.getTimestamp("time").getTime());
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm aaa z");
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("CST6CDT"));
+                    respond(event, String.format("Next group fap is %s", dateFormat.format(date)));
+                } else respond(event, "There are no upcoming group faps. Sorry D:");
+                rs.close();
+                ps.close();
+                conn.close();
+            } catch (SQLException e) {
+                respond(event, String.format("Error loading group faps from database: %s", e.getLocalizedMessage()));
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"when", "w"};
+        }
+
+        @Override
+        public String desc() {
+            return "tells you when the next group fap is";
         }
     }
 }
