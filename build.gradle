@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.divisionind'
-version '0.1.5'
+version '0.1.6'
 mainClassName = 'com.divisionind.fdb.FapBot'
 
 sourceCompatibility = 1.8
@@ -36,4 +36,6 @@ dependencies {
     compile 'net.dv8tion:JDA:3.8.1_447'
 
     compile group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.3.0'
+    
+    compile group: 'com.zaxxer', name: 'HikariCP', version: '3.2.0'
 }

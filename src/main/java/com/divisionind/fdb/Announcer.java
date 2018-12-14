@@ -44,7 +44,7 @@ public class Announcer implements Runnable {
         for (AnnounceTask t : tasks) t.future.cancel(false);
         this.tasks.clear();
         try {
-            Connection con = FapBot.newConnection();
+            Connection con = DB.getConnection();
             PreparedStatement ps = con.prepareStatement("SELECT time, reminders FROM group_faps");
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -170,7 +170,7 @@ public class Announcer implements Runnable {
     }
 
     public static void massPrivateMessage(String msg, List<Guild> guilds) throws SQLException {
-        Connection con = FapBot.newConnection();
+        Connection con = DB.getConnection();
         PreparedStatement ps = con.prepareStatement("SELECT discord_id FROM unsubscribed WHERE discord_id=?");
         if (guilds == null) guilds = FapBot.getJDA().getGuilds();
         for (Guild g : guilds) {

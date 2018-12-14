@@ -23,9 +23,6 @@ import net.dv8tion.jda.core.entities.Game;
 import javax.security.auth.login.LoginException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,9 +44,6 @@ public class FapBot {
     private static JDA jda;
     private static AtomicScheduler scheduler;
     private static Announcer announcer;
-    private static String db_user;
-    private static String db_pass;
-    private static String db_url;
 
     protected static List<ACommand> commands;
 
@@ -99,12 +93,14 @@ public class FapBot {
         }
 
         // setup db connection info
+        log.info("Setting up Hikari connection pool...");
         try {
             URI maria = new URI(System.getenv("JAWSDB_MARIA_URL"));
             String[] userPass = maria.getUserInfo().split(":");
-            db_user = userPass[0];
-            db_pass = userPass[1];
-            db_url = String.format("jdbc:mysql://%s:%s%s", maria.getHost(), maria.getPort(), maria.getPath());
+            String db_user = userPass[0];
+            String db_pass = userPass[1];
+            String db_url = String.format("jdbc:mysql://%s:%s%s", maria.getHost(), maria.getPort(), maria.getPath());
+            DB.__init__(new DB(db_url, db_user, db_pass, JDBC_DRIVER));
         } catch (URISyntaxException e) {
             log.severe("Could not parse JAWSDB_MARIA_URL information. The application will NOT have database access.");
             e.printStackTrace();
@@ -119,10 +115,6 @@ public class FapBot {
 
     public static void registerCMDS(ACommand... cmds) {
         commands.addAll(Arrays.asList(cmds));
-    }
-
-    public static Connection newConnection() throws SQLException {
-        return DriverManager.getConnection(db_url, db_user, db_pass);
     }
 
     public static AtomicScheduler getScheduler() {

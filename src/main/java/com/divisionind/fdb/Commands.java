@@ -136,7 +136,7 @@ public class Commands {
                             respond(event, "You must first finish building the group fap in order to publish it.");
                         } else {
                             try {
-                                Connection con = FapBot.newConnection();
+                                Connection con = DB.getConnection();
                                 PreparedStatement ps = con.prepareStatement("INSERT INTO group_faps VALUES (?,?,?)");
                                 ps.setTimestamp(1, new java.sql.Timestamp(task.datetime.getTime()));
                                 ps.setShort(2, (short)0);
@@ -212,7 +212,7 @@ public class Commands {
             User author = event.getAuthor();
             String toggle_status;
             try {
-                Connection con = FapBot.newConnection();
+                Connection con = DB.getConnection();
                 PreparedStatement st = con.prepareStatement("SELECT discord_id FROM unsubscribed WHERE discord_id=?");
                 st.setLong(1, author.getIdLong());
                 ResultSet rs = st.executeQuery();
@@ -305,7 +305,7 @@ public class Commands {
         @Override
         public void execute(MessageReceivedEvent event, String[] args) {
             try {
-                Connection conn = FapBot.newConnection();
+                Connection conn = DB.getConnection();
                 PreparedStatement ps = conn.prepareStatement("SELECT time, MIN(time) FROM group_faps WHERE time>?");
                 ps.setLong(1, System.currentTimeMillis());
                 ResultSet rs = ps.executeQuery();
