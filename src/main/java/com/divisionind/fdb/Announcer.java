@@ -175,7 +175,8 @@ public class Announcer implements Runnable {
         if (guilds == null) guilds = FapBot.getJDA().getGuilds();
         for (Guild g : guilds) {
             for (Member member : g.getMembers()) {
-                User user = member.getUser(); // possibly cache this to a blacklist ArrayList to reduce database calls. This was not done to reduce ram consumption if the list grows large
+                User user = member.getUser();
+                if (user.isBot()) continue;
                 ps.setLong(1, user.getIdLong());
                 ResultSet rs = ps.executeQuery();
                 if (!rs.next()) user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(msg).queue());
