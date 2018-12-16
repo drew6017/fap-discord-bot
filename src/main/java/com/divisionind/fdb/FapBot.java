@@ -76,7 +76,7 @@ public class FapBot {
             e.printStackTrace();
         }
 
-        jda.getPresence().setGame(Game.streaming(String.format("%shelp", PREFIX), "https://github.com/drew6017/fap-discord-bot"));
+        jda.getPresence().setGame(Game.playing(String.format("%shelp", PREFIX)));
 
         log.info("Creating shutdown hook...");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
