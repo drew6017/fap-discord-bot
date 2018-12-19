@@ -60,7 +60,7 @@ public class BotEvent extends ListenerAdapter {
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
-        event.getGuild().getSystemChannel().sendMessage(String.format("%s has left the discord for some stupid reason.", event.getMember().getEffectiveName())).queue();
+        event.getGuild().getSystemChannel().sendMessage(String.format("**%s** has left the discord for some stupid reason.", event.getMember().getEffectiveName())).queue();
     }
 
     @Override
