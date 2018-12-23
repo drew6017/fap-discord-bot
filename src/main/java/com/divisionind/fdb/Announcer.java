@@ -179,7 +179,12 @@ public class Announcer implements Runnable {
                 if (user.isBot()) continue;
                 ps.setLong(1, user.getIdLong());
                 ResultSet rs = ps.executeQuery();
-                if (!rs.next()) user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(msg).queue());
+                try {
+                    if (!rs.next()) user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(msg).queue());
+                } catch (Exception e) {
+                    FapBot.log.warning("Error sending message to user as part of mass pm.");
+                    e.printStackTrace();
+                }
                 rs.close();
             }
         }
