@@ -53,9 +53,9 @@ public class BotEvent extends ListenerAdapter {
             return;
         }
 
-//        if (raw.toLowerCase().contains("fap")) {
-//            event.getChannel().sendMessage("Did someone say fap? I like to have fun and party!").queue();
-//        }
+        if (raw.toLowerCase().contains("fap") && event.getAuthor().getIdLong() == 377291553913438220L) {
+            event.getChannel().sendMessage("Did someone say fap? I like to have fun and party!").queue();
+        }
     }
 
     @Override
