@@ -53,7 +53,7 @@ public class BotEvent extends ListenerAdapter {
             return;
         }
 
-        if (raw.toLowerCase().contains("fap") && event.getAuthor().getIdLong() == 377291553913438220L) {
+        if (raw.toLowerCase().contains("fap") && event.getAuthor().getIdLong() == 377291553913438220L) { // datpepper
             event.getChannel().sendMessage("Did someone say fap? I like to have fun and party!").queue();
         }
     }
@@ -61,7 +61,7 @@ public class BotEvent extends ListenerAdapter {
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
         if (event.getUser().isBot()) return;
-        event.getGuild().getSystemChannel().sendMessage(String.format("**%s** has left the discord for some stupid reason.", event.getMember().getEffectiveName())).queue();
+        event.getGuild().getTextChannelById(FapBot.DISCORD_HELLO_GOODBYE_TC_ID).sendMessage(String.format("**%s#%s** has left the discord for some stupid reason.", event.getMember().getEffectiveName(), event.getUser().getDiscriminator())).queue();
     }
 
     @Override

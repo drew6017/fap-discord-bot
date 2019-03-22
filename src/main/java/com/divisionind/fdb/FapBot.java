@@ -36,6 +36,7 @@ public class FapBot {
     public static final String DELIMITER = " ";
     public static final long DISCORD_GUILD_ID = 425464794368442371L;
     public static final long DISCORD_GROUP_FAP_TC_ID = 505460272115351552L;
+    public static final long DISCORD_HELLO_GOODBYE_TC_ID = 558749269478080523L;
     public static final int SCHEDULER_THREADS = 2;
 
     private static final String TOKEN = System.getenv("DISCORD_BOT_TOKEN");
@@ -44,6 +45,7 @@ public class FapBot {
     private static JDA jda;
     private static AtomicScheduler scheduler;
     private static Announcer announcer;
+    //private static ThreadPoolExecutor threadCluster;
 
     protected static List<ACommand> commands;
 
@@ -81,6 +83,7 @@ public class FapBot {
         log.info("Creating shutdown hook...");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (jda != null) jda.shutdownNow();
+            //if (threadCluster != null) threadCluster.shutdown();
         }));
 
         // load db driver
@@ -110,6 +113,9 @@ public class FapBot {
         announcer = new Announcer();
         scheduler.repeating(announcer, 0L, 30L, TimeUnit.MINUTES);
 
+        // create cluster msg in handler
+        //threadCluster = (ThreadPoolExecutor)Executors.newCachedThreadPool(DaemonThreadFactory.getThreadFactory());
+
         log.info("FapBot is now running.");
     }
 
@@ -120,6 +126,10 @@ public class FapBot {
     public static AtomicScheduler getScheduler() {
         return scheduler;
     }
+
+//    public static ThreadPoolExecutor getThreadCluster() {
+//        return threadCluster;
+//    }
 
     public static Announcer getAnnouncer() {
         return announcer;

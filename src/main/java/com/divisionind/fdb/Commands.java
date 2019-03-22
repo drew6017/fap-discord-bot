@@ -67,7 +67,7 @@ public class Commands {
             Random randy = new Random();
             String msg;
             int key = randy.nextInt(3);
-            if (key == 0 && event.getAuthor().getId().equals("246069907467403264")) key = 1; // prevents drew6017 from getting bad messages
+            if (key == 0 && event.getAuthor().getIdLong() == 246069907467403264L) key = 3; // prevents drew6017 from getting bad messages
             switch (key) {
                 case 0:
                     msg = "Leave me alone...";
