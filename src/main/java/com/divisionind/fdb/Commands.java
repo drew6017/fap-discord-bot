@@ -310,10 +310,12 @@ public class Commands {
                 ps.setLong(1, System.currentTimeMillis());
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
-                    Date date = new Date(rs.getTimestamp("time").getTime());
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm aaa z");
-                    dateFormat.setTimeZone(TimeZone.getTimeZone("CST6CDT"));
-                    respond(event, String.format("The next group fap is %s", dateFormat.format(date)));
+                    try {
+                        Date date = new Date(rs.getTimestamp("time").getTime());
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm aaa z");
+                        dateFormat.setTimeZone(TimeZone.getTimeZone("CST6CDT"));
+                        respond(event, String.format("The next group fap is %s", dateFormat.format(date)));
+                    } catch (Exception e) { respond(event, "There are no upcoming group faps. Sorry D:"); }
                 } else respond(event, "There are no upcoming group faps. Sorry D:");
                 rs.close();
                 ps.close();
