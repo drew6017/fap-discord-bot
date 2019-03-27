@@ -62,6 +62,8 @@ public class BotEvent extends ListenerAdapter {
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
         if (event.getUser().isBot()) return;
         event.getGuild().getTextChannelById(FapBot.DISCORD_HELLO_GOODBYE_TC_ID).sendMessage(String.format("**%s#%s** has left the discord for some stupid reason.", event.getMember().getEffectiveName(), event.getUser().getDiscriminator())).queue();
+        event.getUser().openPrivateChannel().queue(pmc -> pmc.sendMessage(String.format("We are sad to see you leave :(. You were invited to FAP because you are truly awesome, and the door is always open to people like you. In that spirit, here is a link that will never expire for you to rejoin FAP should you ever choose to do so: %s. Thanks for being you!",
+                        FapBot.PERMANENT_INVITE_LINK)).queue());
     }
 
     @Override

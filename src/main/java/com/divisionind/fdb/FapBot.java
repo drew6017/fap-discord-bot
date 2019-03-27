@@ -34,6 +34,7 @@ public class FapBot {
     public static final Logger log = Logger.getLogger("FapBot");
     public static final String PREFIX = "$";
     public static final String DELIMITER = " ";
+    public static final String PERMANENT_INVITE_LINK = "https://discord.gg/QBAeD6u";
     public static final long DISCORD_GUILD_ID = 425464794368442371L;
     public static final long DISCORD_GROUP_FAP_TC_ID = 505460272115351552L;
     public static final long DISCORD_HELLO_GOODBYE_TC_ID = 558749269478080523L;
@@ -63,7 +64,8 @@ public class FapBot {
                 new Commands.Unsubscribe(),
                 new Commands.Info(),
                 new Commands.PrivateMessage(),
-                new Commands.When());
+                new Commands.When(),
+                new Commands.Test());
 
         // start JDA
         try {

@@ -336,4 +336,28 @@ public class Commands {
             return "tells you when the next group fap is";
         }
     }
+
+    protected static class Test extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            if (event.getAuthor().getIdLong() == 246069907467403264L) {
+                User u = FapBot.getJDA().getUserById(190709191659225090L);
+                User u2 = FapBot.getJDA().getUserById(246069907467403264L);
+                u.openPrivateChannel().queue(pmc -> pmc.sendMessage(String.format("Ignore this mick",
+                        FapBot.PERMANENT_INVITE_LINK)).queue());
+                u2.openPrivateChannel().queue(pmc -> pmc.sendMessage("Yep! 239794085609734145").queue());
+            } else respond(event, "You must be drew6017 to use this command. Sorry.");
+
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"test", "t"};
+        }
+
+        @Override
+        public String desc() {
+            return "don't mind this command";
+        }
+    }
 }
