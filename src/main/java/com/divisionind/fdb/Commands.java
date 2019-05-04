@@ -19,6 +19,7 @@ import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.managers.Presence;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -386,10 +387,38 @@ public class Commands {
         public void execute(MessageReceivedEvent event, String[] args) {
             if (hasRole(event.getMember(), event.getAuthor(), "Verified Fat Cock")) {
                 StringBuilder sb = new StringBuilder();
-                for (int i = 1;i<args.length;i++) sb.append(args[i]).append(" ");
-                FapBot.getJDA().getPresence().setGame(Game.playing(sb.toString()));
-                respond(event, "Playing message has been set.");
+                Presence presence = FapBot.getJDA().getPresence();
+
+                try {
+                    if (args[1].equalsIgnoreCase("p")) {
+                        readMessage(2, args, sb);
+                        presence.setGame(Game.playing(sb.toString()));
+                    } else
+                    if (args[1].equalsIgnoreCase("s")) {
+                        readMessage(3, args, sb);
+                        presence.setGame(Game.streaming(sb.toString(), args[2]));
+                    } else
+                    if (args[1].equalsIgnoreCase("w")) {
+                        readMessage(2, args, sb);
+                        presence.setGame(Game.watching(sb.toString()));
+                    } else
+                    if (args[1].equalsIgnoreCase("l")) {
+                        readMessage(2, args, sb);
+                        presence.setGame(Game.listening(sb.toString()));
+                    } else {
+                        respond(event, "Status code incorrect. Valid codes are: p (playing), s (streaming), w (watching), l (listening)");
+                        return;
+                    }
+                    respond(event, "Playing message has been set.");
+                } catch (IllegalStateException e) {
+                    respond(event, "Parameters are incorrect. Please review your syntax. Note: The \"s\" code requires the parameters <url> <msg>");
+                }
             }
+        }
+
+        private void readMessage(int start, String[] args, StringBuilder sb) {
+            if (args.length <= start) throw new IllegalStateException();
+            for (int i = start;i<args.length;i++) sb.append(args[i]).append(" ");
         }
 
         @Override
