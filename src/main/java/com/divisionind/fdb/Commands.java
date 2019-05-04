@@ -389,6 +389,11 @@ public class Commands {
                 StringBuilder sb = new StringBuilder();
                 Presence presence = FapBot.getJDA().getPresence();
 
+                if (args.length < 2) {
+                    respond(event, String.format("Correct usage: %ssp <p:s:w:l> <msg>", FapBot.PREFIX));
+                    return;
+                }
+
                 try {
                     if (args[1].equalsIgnoreCase("p")) {
                         readMessage(2, args, sb);
@@ -416,7 +421,7 @@ public class Commands {
             } else respond(event, "You do not have permission to use this command. Sorry D:");
         }
 
-        private void readMessage(int start, String[] args, StringBuilder sb) {
+        private void readMessage(int start, String[] args, StringBuilder sb) throws IllegalStateException {
             if (args.length <= start) throw new IllegalStateException();
             for (int i = start;i<args.length;i++) sb.append(args[i]).append(" ");
         }
