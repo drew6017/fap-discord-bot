@@ -15,6 +15,7 @@
 
 package com.divisionind.fdb;
 
+import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -38,7 +39,11 @@ public class Commands {
         public void execute(MessageReceivedEvent event, String[] args) {
             StringBuilder sb = new StringBuilder();
             sb.append("Commands often have several aliases separated by commas for quick usage. Here is a list of commands:\n");
+            boolean isFatCock = hasRole(event.getMember(), event.getAuthor(), "Verified Fat Cock");
             for (ACommand c : FapBot.commands) {
+                if (!isFatCock) {
+                    if (c.isHidden()) continue;
+                }
                 String[] aliases = c.aliases();
                 sb.append("**");
                 for (int i = 0;i<aliases.length;i++) {
@@ -181,6 +186,11 @@ public class Commands {
             return "create and manage group faps";
         }
 
+        @Override
+        public boolean isHidden() {
+            return true;
+        }
+
         private class GroupFapTask {
             private Date datetime;
             private String msg;
@@ -299,6 +309,11 @@ public class Commands {
         public String desc() {
             return "sends out a mass private message to all members of all connected discords";
         }
+
+        @Override
+        public boolean isHidden() {
+            return true;
+        }
     }
 
     protected static class When extends ACommand {
@@ -358,6 +373,38 @@ public class Commands {
         @Override
         public String desc() {
             return "don't mind this command";
+        }
+
+        @Override
+        public boolean isHidden() {
+            return true;
+        }
+    }
+
+    protected static class SetPlaying extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            if (hasRole(event.getMember(), event.getAuthor(), "Verified Fat Cock")) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 1;i<args.length;i++) sb.append(args[i]).append(" ");
+                FapBot.getJDA().getPresence().setGame(Game.playing(sb.toString()));
+                respond(event, "Playing message has been set.");
+            }
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"setplaying", "sp"};
+        }
+
+        @Override
+        public String desc() {
+            return "temporarily sets the \"Playing X\" tag for the bot";
+        }
+
+        @Override
+        public boolean isHidden() {
+            return true;
         }
     }
 }

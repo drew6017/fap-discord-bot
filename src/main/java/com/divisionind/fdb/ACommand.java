@@ -29,6 +29,10 @@ public abstract class ACommand {
 
     public abstract String desc();
 
+    public boolean isHidden() {
+        return false;
+    }
+
     protected boolean matchesAlias(String a) {
         for (String alias : aliases()) {
             if (alias.equalsIgnoreCase(a)) return true;
