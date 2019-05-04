@@ -413,7 +413,7 @@ public class Commands {
                 } catch (IllegalStateException e) {
                     respond(event, "Parameters are incorrect. Please review your syntax. Note: The \"s\" code requires the parameters <url> <msg>");
                 }
-            }
+            } else respond(event, "You do not have permission to use this command. Sorry D:");
         }
 
         private void readMessage(int start, String[] args, StringBuilder sb) {
