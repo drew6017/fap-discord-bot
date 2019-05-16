@@ -37,7 +37,10 @@ public class FapBot {
     public static final String PERMANENT_INVITE_LINK = "https://discord.gg/QBAeD6u";
     public static final long DISCORD_GUILD_ID = 425464794368442371L;
     public static final long DISCORD_GROUP_FAP_TC_ID = 505460272115351552L;
+    public static final long DISCORD_MAIN_TC_ID = 425464794368442375L;
     public static final long DISCORD_HELLO_GOODBYE_TC_ID = 558749269478080523L;
+    public static final long ROLE_ID_VERIFIED_FAT_COCK = 457718136091705355L;
+    public static final long ROLE_ID_MASTER_GAMER = 578487579544911872L;
     public static final int SCHEDULER_THREADS = 2;
 
     private static final String TOKEN = System.getenv("DISCORD_BOT_TOKEN");
