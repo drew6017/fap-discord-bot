@@ -2,7 +2,7 @@
  * DIVISION INDUSTRIES CONFIDENTIAL
  * __________________________________
  *
- *  2015-2018 Division Industries LLC
+ *  2015-2019 Division Industries LLC
  *  All Rights Reserved.
  *
  * NOTICE:  All information contained herein is, and remains the property of Division Industries LLC
@@ -21,6 +21,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DB {
+
+    /*
+        Database structure must be pre-defined to run FapBot!
+
+        DB:
+            Tables:
+            - group_faps
+            - unsubscribed
+     */
 
     private static DB instance;
 

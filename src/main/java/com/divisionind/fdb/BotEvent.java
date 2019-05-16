@@ -2,7 +2,7 @@
  * DIVISION INDUSTRIES CONFIDENTIAL
  * __________________________________
  *
- *  2015-2018 Division Industries LLC
+ *  2015-2019 Division Industries LLC
  *  All Rights Reserved.
  *
  * NOTICE:  All information contained herein is, and remains the property of Division Industries LLC
@@ -15,9 +15,16 @@
 
 package com.divisionind.fdb;
 
+import net.dv8tion.jda.client.events.call.voice.CallVoiceJoinEvent;
+import net.dv8tion.jda.client.events.call.voice.CallVoiceLeaveEvent;
+import net.dv8tion.jda.core.events.ReadyEvent;
+import net.dv8tion.jda.core.events.ReconnectedEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.events.user.update.UserUpdateGameEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 public class BotEvent extends ListenerAdapter {
@@ -70,5 +77,15 @@ public class BotEvent extends ListenerAdapter {
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         if (event.getUser().isBot()) return;
         event.getUser().openPrivateChannel().queue(pmc -> pmc.sendMessage("Hi and welcome to the Fun and partying (F.A.P) discord server. As our name implies, we just like to have fun here (and party). So feel free to reach out and make friends with anyone on the discord.").queue());
+    }
+
+    @Override
+    public void onReady(ReadyEvent event) {
+        super.onReady(event); // TODO refresh member game/voice playing, e.g. figure out who playing what and start counting
+    }
+
+    @Override
+    public void onReconnect(ReconnectedEvent event) {
+        super.onReconnect(event); // TODO refresh member game/voice playing
     }
 }
