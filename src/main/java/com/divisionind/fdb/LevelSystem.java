@@ -20,6 +20,7 @@ import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.entities.*;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class LevelSystem implements Runnable {
     private static final long BASE_GAMER_POINTS_PM = 2; // max = 96000 (around 800 hours of playing games)
     private static final double BASE_SERVER_POINTS_PM = 2;
     private static final double SERVER_POINTS_MULTIPLIER = 0.5; // effective multiplier (2 players = 1x, 4 players = 2x)
+    private static final int MAX_XP_BAR_LENGTH = 534;
 
     private static final HashMap<Integer, MilestoneEvent> milestones = new HashMap<>();
 
@@ -60,7 +62,7 @@ public class LevelSystem implements Runnable {
                 ps.close();
                 conn.close();
                 ImageIO.write(prepareImage(member, trigger_level, game_xp, server_xp), "png", bao);
-            } catch (IOException | SQLException e) {
+            } catch (IOException | SQLException | FontFormatException e) {
                 System.err.println("Could not render image to user " + member.getEffectiveName() + "'s level up message.");
                 e.printStackTrace();
                 return;
@@ -180,7 +182,7 @@ public class LevelSystem implements Runnable {
             } else
             if (level == Level.SERVER) { // I duplicated the code here to support future level types with greater differences more easily
                 // award server xp
-                short old_server_level = rs.getShort("server_level");
+                short old_server_level = rs.getShort("server_level"); // TODO make server xp reset after each level such that it is constantly change
                 rs.close();
                 ps.close();
                 if (newxp_value <= 96000) { // allows value to go over 96000 as a way to track further progress (maybe do something with it later)
@@ -232,8 +234,45 @@ public class LevelSystem implements Runnable {
         });
     }
 
-    public BufferedImage prepareImage(Member member, int level, long gamer_xp, long server_xp) {
-        return null; // TODO
+    public BufferedImage prepareImage(Member member, int level, long gamer_xp, long server_xp) throws IOException, FontFormatException {
+        BufferedImage img = ImageIO.read(getClass().getResource("/com/divisionind/fdb/assets/level-up-template.png"));
+        Graphics g = img.getGraphics();
+        Graphics2D g2d = (Graphics2D)g;
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+
+        // server_xp bar
+        g2d.setColor(new Color(0, 118, 177));
+        BigDecimal bd = new BigDecimal(server_xp).divide(new BigDecimal(96000), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
+        g2d.fillRect(214, 34, bd.intValue(), 10);
+
+        // gamer_xp bar
+        g2d.setColor(new Color(34, 227, 0));
+        bd = new BigDecimal(gamer_xp).divide(new BigDecimal(96000), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
+        g2d.fillRect(214, 44, bd.intValue(), 10);
+
+        // users name
+        g2d.setColor(Color.WHITE);
+        Font font = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/com/divisionind/fdb/assets/phagspab.ttf"));
+        g2d.setFont(font.deriveFont(70F));
+        g2d.drawString(member.getEffectiveName(), 214, 150);
+
+        // level
+        g2d.setColor(new Color(249, 204, 4));
+        g2d.setFont(font.deriveFont(60F));
+        String slevel = Integer.toString(level);
+
+        // im too lazy to calculate the width of the string and center it right now. maybe later
+        if (level == 100) {
+            g2d.drawString(slevel, 55, 140);
+        } else
+        if (level < 100 && level > 9) {
+            g2d.drawString(slevel, 67, 140);
+        } else {
+            g2d.drawString(slevel, 85, 140);
+        }
+
+        return img;
     }
 
     // in range once via increment (e.g. i = 10, min = 9, max = 10 yields true while i = 10, min = 10, max = 11 yields false
