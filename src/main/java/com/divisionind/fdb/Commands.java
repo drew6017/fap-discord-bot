@@ -33,10 +33,8 @@ import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.TimeZone;
+import java.util.List;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -422,15 +420,38 @@ public class Commands {
     protected static class Xp extends ACommand {
         @Override
         public void execute(MessageReceivedEvent event, String[] args) {
-            Member member = event.getMember();
+            if (args.length == 1) {
+                sendStats(event, event.getAuthor());
+            } else {
+                List<Member> memberList = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getMembersByEffectiveName(args[1], false);
+                if (memberList.size() == 0) {
+                    respond(event, String.format("Member \"%s\" not found. Please check the spelling of the effective name provided.", args[1]));
+                } else
+                if (memberList.size() == 1) {
+                    sendStats(event, memberList.get(0).getUser());
+                } else {
+                    if (args.length > 2) {
+                        for (Member m : memberList) {
+                            if (m.getUser().getDiscriminator().equals(args[2])) {
+                                sendStats(event, m.getUser());
+                                break;
+                            }
+                        }
+                    } else {
+                        StringBuilder sb = new StringBuilder("There are multiple users by this name. Which one do you mean:");
+                        for (Member m : memberList) sb.append("\n").append(m.getEffectiveName()).append(" ").append(m.getUser().getDiscriminator());
+                        respond(event, sb.toString());
+                    }
+                }
+            }
+        }
 
-            // member will return null if the person is pm-ing FapBot, we must look them up
-            if (member == null) member = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getMember(event.getAuthor());
-
+        private void sendStats(MessageReceivedEvent event, User user) {
+            Member member = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getMember(user);
             try {
                 Connection conn = DB.getConnection();
                 PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata WHERE discord_id=?");
-                ps.setLong(1, event.getAuthor().getIdLong());
+                ps.setLong(1, user.getIdLong());
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
                     short server_level = rs.getShort("server_level");
@@ -464,28 +485,6 @@ public class Commands {
         @Override
         public String desc() {
             return "shows your current xp/level statistics";
-        }
-    }
-
-    protected static class GiveXp extends ACommand {
-        @Override
-        public void execute(MessageReceivedEvent event, String[] args) {
-            // TODO
-        }
-
-        @Override
-        public String[] aliases() {
-            return new String[] {"givexp", "gx"};
-        }
-
-        @Override
-        public String desc() {
-            return "gives xp to a user based on username";
-        }
-
-        @Override
-        public boolean isHidden() {
-            return true;
         }
     }
 }
