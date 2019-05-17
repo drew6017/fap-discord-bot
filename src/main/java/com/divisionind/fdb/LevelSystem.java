@@ -33,7 +33,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class LevelSystem implements Runnable {
 
@@ -61,13 +60,17 @@ public class LevelSystem implements Runnable {
                 rs.close();
                 ps.close();
                 conn.close();
-                ImageIO.write(prepareImage(member, trigger_level, game_xp, server_xp), "png", bao);
+                if (level_type == Level.SERVER) {
+                    ImageIO.write(prepareImage(member, trigger_level, game_xp, server_xp), "png", bao);
+                } else {
+                    ImageIO.write(prepareImage(member, (int)level, game_xp, server_xp), "png", bao);
+                }
             } catch (IOException | SQLException | FontFormatException e) {
                 System.err.println("Could not render image to user " + member.getEffectiveName() + "'s level up message.");
                 e.printStackTrace();
                 return;
             }
-            tc.sendFile(bao.toByteArray(), member.getEffectiveName() + "_level_up.png", new MessageBuilder(member.getEffectiveName() + " just leveled up their " + level_type.name().toLowerCase() + " level!").build()).queue();
+            tc.sendFile(bao.toByteArray(), "faplevelup.png", new MessageBuilder(member.getEffectiveName() + " just leveled up their " + level_type.name().toLowerCase() + " level!").build()).queue();
         };
 
         milestones.put(10, incrementOf10);
@@ -97,8 +100,6 @@ public class LevelSystem implements Runnable {
                 member.getGuild().getController().addSingleRoleToMember(member, member.getGuild().getRoleById(role)).queue(); // maybe add .reason() here
             }
         });
-
-        FapBot.getScheduler().repeating(this, 1, 1, TimeUnit.MINUTES);
     }
 
     @Override
@@ -151,10 +152,10 @@ public class LevelSystem implements Runnable {
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             // has user data, update (did level up occur)
-            long newxp_value = rs.getLong(level.db_descriptor) + points;
             if (level == Level.GAMER) {
                 // award gamer xp
                 short old_gamer_level = rs.getShort("gamer_level");
+                long newxp_value = rs.getLong("game_xp") + points;
                 rs.close();
                 ps.close();
                 if (newxp_value <= 96000) { // allows value to go over 96000 as a way to track further progress (maybe do something with it later)
@@ -180,27 +181,44 @@ public class LevelSystem implements Runnable {
                 ps.setLong(2, user.getIdLong());
                 ps.executeUpdate();
             } else
-            if (level == Level.SERVER) { // I duplicated the code here to support future level types with greater differences more easily
+            if (level == Level.SERVER) {
                 // award server xp
-                short old_server_level = rs.getShort("server_level"); // TODO make server xp reset after each level such that it is constantly change
+                short old_server_level = rs.getShort("server_level");
+                long newxp_value = rs.getLong("server_xp") + points;
                 rs.close();
                 ps.close();
-                if (newxp_value <= 96000) { // allows value to go over 96000 as a way to track further progress (maybe do something with it later)
-                    BigDecimal bd = new BigDecimal(newxp_value).divide(new BigDecimal(960), 1, RoundingMode.DOWN);
-                    short new_server_level = bd.shortValue();
-                    if (old_server_level < new_server_level) {
-                        // award new level
-                        // e.g. update new level in db, check if passed any level milestones
-                        ps = conn.prepareStatement("UPDATE leveldata SET server_level = ?, server_xp = server_xp + ? WHERE discord_id=?");
-                        ps.setShort(1, new_server_level);
-                        ps.setLong(2, points);
-                        ps.setLong(3, user.getIdLong());
-                        ps.executeUpdate();
-                        ps.close();
-                        conn.close();
-                        awardMilestones(member, level, old_server_level, new_server_level);
-                        return;
+                if (old_server_level >= 100) {
+                    conn.close();
+                    return;
+                }
+                if (newxp_value >= 960) {
+                    // there are enough points to level up
+
+                    long increase_levels;
+                    long sparePoints;
+
+                    if (newxp_value > 960) {
+                        increase_levels = newxp_value / 960L;
+                        sparePoints = newxp_value - (increase_levels * 960);
+                    } else {
+                        increase_levels = 1;
+                        sparePoints = 0;
                     }
+
+                    if ((old_server_level + increase_levels) >= 100) {
+                        increase_levels = 100 - old_server_level;
+                        sparePoints = 960;
+                    }
+
+                    ps = conn.prepareStatement("UPDATE leveldata SET server_level = server_level + ?, server_xp = ? WHERE discord_id=?");
+                    ps.setShort(1, (short)increase_levels);
+                    ps.setLong(2, sparePoints);
+                    ps.setLong(3, user.getIdLong());
+                    ps.executeUpdate();
+                    ps.close();
+                    conn.close();
+                    awardMilestones(member, level, old_server_level, (short)(old_server_level + (short)increase_levels));
+                    return;
                 }
                 // update points in db
                 ps = conn.prepareStatement("UPDATE leveldata SET server_xp = server_xp + ? WHERE discord_id=?");
@@ -243,13 +261,15 @@ public class LevelSystem implements Runnable {
 
         // server_xp bar
         g2d.setColor(new Color(0, 118, 177));
-        BigDecimal bd = new BigDecimal(server_xp).divide(new BigDecimal(96000), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
+        BigDecimal bd = new BigDecimal(server_xp).divide(new BigDecimal(960), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
         g2d.fillRect(214, 34, bd.intValue(), 10);
 
         // gamer_xp bar
         g2d.setColor(new Color(34, 227, 0));
         bd = new BigDecimal(gamer_xp).divide(new BigDecimal(96000), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
-        g2d.fillRect(214, 44, bd.intValue(), 10);
+        int bdint = bd.intValue();
+        if (bdint > MAX_XP_BAR_LENGTH) bdint = MAX_XP_BAR_LENGTH;
+        g2d.fillRect(214, 44, bdint, 10);
 
         // users name
         g2d.setColor(Color.WHITE);

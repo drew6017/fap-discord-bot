@@ -15,16 +15,22 @@
 
 package com.divisionind.fdb;
 
+import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.managers.Presence;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -353,35 +359,6 @@ public class Commands {
         }
     }
 
-    protected static class Test extends ACommand {
-        @Override
-        public void execute(MessageReceivedEvent event, String[] args) {
-            if (event.getAuthor().getIdLong() == 246069907467403264L) {
-                User u = FapBot.getJDA().getUserById(190709191659225090L);
-                User u2 = FapBot.getJDA().getUserById(246069907467403264L);
-                u.openPrivateChannel().queue(pmc -> pmc.sendMessage(String.format("Ignore this mick",
-                        FapBot.PERMANENT_INVITE_LINK)).queue());
-                u2.openPrivateChannel().queue(pmc -> pmc.sendMessage("Yep! 239794085609734145").queue());
-            } else respond(event, "You must be drew6017 to use this command. Sorry.");
-
-        }
-
-        @Override
-        public String[] aliases() {
-            return new String[] {"test", "t"};
-        }
-
-        @Override
-        public String desc() {
-            return "don't mind this command";
-        }
-
-        @Override
-        public boolean isHidden() {
-            return true;
-        }
-    }
-
     protected static class SetPlaying extends ACommand {
         @Override
         public void execute(MessageReceivedEvent event, String[] args) {
@@ -434,6 +411,76 @@ public class Commands {
         @Override
         public String desc() {
             return "temporarily sets the \"Playing X\" tag for the bot";
+        }
+
+        @Override
+        public boolean isHidden() {
+            return true;
+        }
+    }
+
+    protected static class Xp extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            Member member = event.getMember();
+
+            // member will return null if the person is pm-ing FapBot, we must look them up
+            if (member == null) member = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getMember(event.getAuthor());
+
+            try {
+                Connection conn = DB.getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata WHERE discord_id=?");
+                ps.setLong(1, event.getAuthor().getIdLong());
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    short server_level = rs.getShort("server_level");
+                    short gamer_level = rs.getShort("gamer_level");
+                    short prestige = rs.getShort("prestige");
+                    long server_xp = rs.getLong("server_xp");
+                    long game_xp = rs.getLong("game_xp");
+                    rs.close();
+                    ps.close();
+                    conn.close();
+
+                    ByteArrayOutputStream bao = new ByteArrayOutputStream();
+                    ImageIO.write(FapBot.getLevelSystem().prepareImage(member, server_level, game_xp, server_xp), "png", bao);
+                    event.getChannel().sendFile(bao.toByteArray(), "faplevel.png", new MessageBuilder(
+                            String.format("**Server Level: ** %s\n**Server Xp:** %s / 960\n**Gamer Level:** %s\n**Gamer Xp:** %s / 96,000\n**Prestige:** %s",
+                                    server_level, server_xp, gamer_level, NumberFormat.getNumberInstance().format(game_xp), prestige
+                            )).build()).queue();
+                } else {
+                    respond(event, "You do not have a level. Go play games or chat with some people from FAP to gain xp and level up.");
+                }
+            } catch (SQLException | IOException | FontFormatException e) {
+                respond(event, "Oops, sorry about that. We seem to be having technical difficulties. Please try again later.");
+            }
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"xp"};
+        }
+
+        @Override
+        public String desc() {
+            return "shows your current xp/level statistics";
+        }
+    }
+
+    protected static class GiveXp extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            // TODO
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"givexp", "gx"};
+        }
+
+        @Override
+        public String desc() {
+            return "gives xp to a user based on username";
         }
 
         @Override

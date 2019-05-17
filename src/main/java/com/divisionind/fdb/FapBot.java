@@ -49,6 +49,7 @@ public class FapBot {
     private static JDA jda;
     private static AtomicScheduler scheduler;
     private static Announcer announcer;
+    private static LevelSystem levelSystem;
     //private static ThreadPoolExecutor threadCluster;
 
     protected static List<ACommand> commands;
@@ -68,8 +69,8 @@ public class FapBot {
                 new Commands.Info(),
                 new Commands.PrivateMessage(),
                 new Commands.When(),
-                new Commands.Test(),
-                new Commands.SetPlaying());
+                new Commands.SetPlaying(),
+                new Commands.Xp());
 
         // start JDA
         try {
@@ -119,6 +120,10 @@ public class FapBot {
         announcer = new Announcer();
         scheduler.repeating(announcer, 0L, 30L, TimeUnit.MINUTES);
 
+        // initialize level system
+        levelSystem = new LevelSystem();
+        scheduler.repeating(levelSystem, 1L, 1L, TimeUnit.MINUTES);
+
         // create cluster msg in handler
         //threadCluster = (ThreadPoolExecutor)Executors.newCachedThreadPool(DaemonThreadFactory.getThreadFactory());
 
@@ -139,6 +144,10 @@ public class FapBot {
 
     public static Announcer getAnnouncer() {
         return announcer;
+    }
+
+    public static LevelSystem getLevelSystem() {
+        return levelSystem;
     }
 
     public static JDA getJDA() {
