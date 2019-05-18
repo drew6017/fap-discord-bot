@@ -508,7 +508,7 @@ public class Commands {
                     } else
                     if (args[1].equalsIgnoreCase("gamer")) {
                         // lists top 5 for gamer level
-                        StringBuilder sb = prepareFromStatement(conn.prepareStatement("SELECT * FROM leveldata ORDER BY game_xp DESC LIMIT 5"), guild, LevelSystem.Level.SERVER, 3, 6);
+                        StringBuilder sb = prepareFromStatement(conn.prepareStatement("SELECT * FROM leveldata ORDER BY game_xp DESC LIMIT 5"), guild, LevelSystem.Level.GAMER, 3, 6);
                         respond(event, sb.toString());
 
                     } else respond(event, "Please specify \"server\" or \"gamer\" to show the top people in either of these categories.");
