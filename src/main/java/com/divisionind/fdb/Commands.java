@@ -290,7 +290,7 @@ public class Commands {
     protected static class PrivateMessage extends ACommand {
         @Override
         public void execute(MessageReceivedEvent event, String[] args) {
-            if (event.getAuthor().getIdLong() == 246069907467403264L) {
+            if (event.getAuthor().getIdLong() == FapBot.SERVER_OWNERS_DC_ID) { // drew6017's user id
                 if (args.length < 2) {
                     respond(event, "You must specify a message to send to everyone.");
                     return;
@@ -585,6 +585,64 @@ public class Commands {
         @Override
         public String desc() {
             return "shows a list of the top five people based on server or gamer level";
+        }
+    }
+
+    protected static class RewardPoints extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            if (event.getAuthor().getIdLong() == FapBot.SERVER_OWNERS_DC_ID) {
+                if (args.length == 4) {
+                    long points;
+                    Member member;
+                    // attempt to parse points
+                    try {
+                        points = Long.parseLong(args[3]);
+                        if (points < 1) throw new NumberFormatException();
+                    } catch (NumberFormatException e) {
+                        respond(event, "Invalid number specified for points. Note: can not be negative or zero");
+                        return;
+                    }
+
+                    // attempt to resolve name to member
+                    List<Member> membersByEffectiveName = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getMembersByEffectiveName(args[1], false);
+                    if (membersByEffectiveName.size() == 0) {
+                        respond(event, "No user by that name was found. Is this their name as it appears in the discord server?");
+                        return;
+                    }
+                    if (membersByEffectiveName.size() > 1) {
+                        respond(event, "Multiple users by this name found. Sorry, you can't give xp to this person.");
+                        return;
+                    }
+                    member = membersByEffectiveName.get(0);
+
+                    // assign points based on type
+                    try {
+                        if (args[2].equalsIgnoreCase("server") || args[2].equalsIgnoreCase("gamer")) {
+                            FapBot.getLevelSystem().awardPoints(member, args[2].equalsIgnoreCase("server") ? LevelSystem.Level.SERVER : LevelSystem.Level.GAMER, points);
+                            respond(event, String.format("%s points where awarded towards %s's %s level.", NumberFormat.getNumberInstance().format(points), member.getEffectiveName(), args[2].toLowerCase()));
+                        } else respond(event, "The correct value for argument 2 is server or gamer.");
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        respond(event, "The database is currently down. Sorry.");
+                    }
+                } else respond(event, String.format("Correct usage: %sap <name> [server:gamer] <points>", FapBot.PREFIX));
+            } else respond(event, "Sorry. This command can only be used by drew6017.");
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"awardpoints", "ap"};
+        }
+
+        @Override
+        public String desc() {
+            return "awards points to users";
+        }
+
+        @Override
+        public boolean isHidden() {
+            return true;
         }
     }
 }

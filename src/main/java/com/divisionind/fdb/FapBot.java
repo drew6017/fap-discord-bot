@@ -41,6 +41,7 @@ public class FapBot {
     public static final long DISCORD_HELLO_GOODBYE_TC_ID = 558749269478080523L;
     public static final long ROLE_ID_VERIFIED_FAT_COCK = 457718136091705355L;
     public static final long ROLE_ID_MASTER_GAMER = 578487579544911872L;
+    public static final long SERVER_OWNERS_DC_ID = 246069907467403264L;
     public static final int SCHEDULER_THREADS = 2;
 
     private static final String TOKEN = System.getenv("DISCORD_BOT_TOKEN");
@@ -71,7 +72,8 @@ public class FapBot {
                 new Commands.When(),
                 new Commands.SetPlaying(),
                 new Commands.Xp(),
-                new Commands.Leaderboard());
+                new Commands.Leaderboard(),
+                new Commands.RewardPoints());
 
         // start JDA
         try {
