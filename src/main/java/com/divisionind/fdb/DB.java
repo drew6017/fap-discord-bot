@@ -28,7 +28,17 @@ public class DB {
         DB:
             Tables:
             - group_faps
+            - leveldata
             - unsubscribed
+
+            Table: group_faps
+            - time (DATETIME), attending (SMALLINT), reminders (TEXT)
+
+            Table: leveldata
+            - discord_id (BIGINT), server_level (SMALLINT), gamer_level (SMALLINT), prestige (SMALLINT), server_xp (BIGINT), game_xp (BIGINT)
+
+            Table: unsubscribed
+            - discord_id (BIGINT), discord_name (TINYTEXT), unsub_date (DATETIME)
      */
 
     private static DB instance;
