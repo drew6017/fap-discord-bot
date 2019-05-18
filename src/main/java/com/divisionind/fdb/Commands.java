@@ -493,7 +493,7 @@ public class Commands {
         @Override
         public void execute(MessageReceivedEvent event, String[] args) {
             if (args.length == 1) {
-                respond(event, String.format("Invalid syntax, the correct usage is %sxp <server:gamer>", FapBot.PREFIX));
+                respond(event, String.format("Invalid syntax, the correct usage is %slb [server:gamer]", FapBot.PREFIX));
             } else
             if (args.length == 2) {
                 try {
@@ -501,7 +501,7 @@ public class Commands {
                     Guild guild = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID);
                     if (args[1].equalsIgnoreCase("server")) {
                         // lists top 5 for server level
-                        // note: this does not factor in prestige because I havent added anything for that. TODO later
+                        // note: this does not factor in prestige because I havent added anything for that. TODO later (maybe remove prestige)
                         StringBuilder sb = prepareFromStatement(conn.prepareStatement("SELECT * FROM leveldata ORDER BY (server_xp + server_level * 960) DESC LIMIT 5"), guild, LevelSystem.Level.SERVER, 2, 5);
                         respond(event, sb.toString());
 
@@ -517,7 +517,7 @@ public class Commands {
                     e.printStackTrace();
                     respond(event, "Sorry, the database is currently down. Try again later.");
                 }
-            } else respond(event, String.format("Invalid syntax, the correct usage is %slb <server:gamer>", FapBot.PREFIX));
+            } else respond(event, String.format("Invalid syntax, the correct usage is %slb [server:gamer]", FapBot.PREFIX));
         }
 
         private class LeaderboardUser {
