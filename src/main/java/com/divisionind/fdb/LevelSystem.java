@@ -171,7 +171,7 @@ public class LevelSystem implements Runnable {
                         ps.executeUpdate();
                         ps.close();
                         conn.close();
-                        awardMilestones(member, level, old_gamer_level, new_gamer_level);
+                        //awardMilestones(member, level, old_gamer_level, new_gamer_level);
                         return;
                     }
                 }
