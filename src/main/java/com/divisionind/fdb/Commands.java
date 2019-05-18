@@ -16,10 +16,7 @@
 package com.divisionind.fdb;
 
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.managers.Presence;
 import net.steppschuh.markdowngenerator.table.Table;
@@ -504,23 +501,22 @@ public class Commands {
                         // lists top 5 for server level
                         PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata ORDER BY (server_xp + server_level * 960) DESC LIMIT 5"); // note: this does not factor in prestige because I havent added anything for that. TODO later
                         ResultSet rs = ps.executeQuery();
-                        //StringBuilder sb = new StringBuilder();
-                        //sb.append("Leaderboard for Server Level:\n");
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Leaderboard for Server Level:\n");
                         Table.Builder builder = new Table.Builder()
                                 .withAlignments(Table.ALIGN_CENTER, Table.ALIGN_CENTER, Table.ALIGN_CENTER)
-                                .addRow("Name", "Level", "Xp ( / 960)");
+                                .addRow("#", "Name", "Level", "Xp ( / 960)"); // instead of #, maybe "Rank"?
+                        int i = 1;
                         while (rs.next()) {
                             Member member = guild.getMemberById(rs.getLong(1));
                             String name;
                             if (member == null) name = "<left>"; else name = member.getEffectiveName();
-                            builder.addRow(name, rs.getShort(2), rs.getLong(5));
+                            builder.addRow(i++, name, rs.getShort(2), rs.getLong(5));
                         }
-                        //sb.append(builder.build().serialize());
 
                         rs.close();
                         ps.close();
-                        //respond(event, sb.toString());
-                        respond(event, builder.build().serialize());
+                        respond(event, sb.toString());
 
                     } else
                     if (args[1].equalsIgnoreCase("gamer")) {
@@ -547,6 +543,37 @@ public class Commands {
                     respond(event, "Sorry, the database is currently down. Try again later.");
                 }
             } else respond(event, String.format("Invalid syntax, the correct usage is %slb <server:gamer>", FapBot.PREFIX));
+        }
+
+        private class LeaderboardUser {
+
+            private String name;
+            private short level;
+            private long xp;
+
+            public LeaderboardUser(String name, short level, long xp) {
+                this.name = name;
+                this.level = level;
+                this.xp = xp;
+            }
+        }
+
+        private void prepareFromList(StringBuilder sb, List<LeaderboardUser> leaderboardUsers, int longestName) {
+            int i = 1;
+            longestName++;
+            for (LeaderboardUser user : leaderboardUsers) {
+                sb.append("\n**").append(i++).append(". ").append(user.name).append("**");
+                addSpaces(longestName - user.name.length(), sb);
+                sb.append("Level: ");
+                addSpaces(4 - Short.toString(user.level).length(), sb); // can add at minimum 1 space (level 100 -> length of 3 -> 4-3 = 1
+                sb.append(user.level).append("     ").append("Xp: ");
+                addSpaces(3 - Long.toString(user.xp).length(), sb);
+                sb.append(user.xp).append(" / 960");
+            }
+        }
+
+        private void addSpaces(int spaces, StringBuilder sb) {
+            for (int i = 0;i<spaces;i++) sb.append(" ");
         }
 
         @Override
