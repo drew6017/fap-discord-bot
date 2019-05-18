@@ -502,20 +502,22 @@ public class Commands {
                         PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata ORDER BY (server_xp + server_level * 960) DESC LIMIT 5"); // note: this does not factor in prestige because I havent added anything for that. TODO later
                         ResultSet rs = ps.executeQuery();
                         StringBuilder sb = new StringBuilder();
-                        sb.append("Leaderboard for Server Level:\n");
-                        Table.Builder builder = new Table.Builder()
-                                .withAlignments(Table.ALIGN_CENTER, Table.ALIGN_CENTER, Table.ALIGN_CENTER)
-                                .addRow("#", "Name", "Level", "Xp ( / 960)"); // instead of #, maybe "Rank"?
-                        int i = 1;
+                        sb.append("Leaderboard for Server Level:```\n");
+                        List<LeaderboardUser> leaderboardUsers = new ArrayList<>();
+                        int longestName = 0;
                         while (rs.next()) {
                             Member member = guild.getMemberById(rs.getLong(1));
                             String name;
                             if (member == null) name = "<left>"; else name = member.getEffectiveName();
-                            builder.addRow(i++, name, rs.getShort(2), rs.getLong(5));
+                            int nameLength = name.length();
+                            if (nameLength > longestName) longestName = nameLength;
+                            leaderboardUsers.add(new LeaderboardUser(name, rs.getShort(2), rs.getLong(5)));
                         }
+                        prepareFromList(sb, leaderboardUsers, longestName);
 
                         rs.close();
                         ps.close();
+                        sb.append("```");
                         respond(event, sb.toString());
 
                     } else
@@ -562,7 +564,7 @@ public class Commands {
             int i = 1;
             longestName++;
             for (LeaderboardUser user : leaderboardUsers) {
-                sb.append("\n**").append(i++).append(". ").append(user.name).append("**");
+                sb.append("\n").append(i++).append(". ").append(user.name);
                 addSpaces(longestName - user.name.length(), sb);
                 sb.append("Level: ");
                 addSpaces(4 - Short.toString(user.level).length(), sb); // can add at minimum 1 space (level 100 -> length of 3 -> 4-3 = 1
