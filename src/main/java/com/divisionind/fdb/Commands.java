@@ -16,10 +16,12 @@
 package com.divisionind.fdb;
 
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.managers.Presence;
-import net.steppschuh.markdowngenerator.table.Table;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -567,8 +569,9 @@ public class Commands {
                 sb.append("\n").append(i++).append(". ").append(user.name);
                 addSpaces(longestName - user.name.length(), sb);
                 sb.append("Level: ");
-                addSpaces(4 - Short.toString(user.level).length(), sb); // can add at minimum 1 space (level 100 -> length of 3 -> 4-3 = 1
-                sb.append(user.level).append("     ").append("Xp: ");
+                sb.append(user.level);
+                addSpaces(8 - Long.toString(user.level).length(), sb);
+                sb.append("Xp: ");
                 addSpaces(3 - Long.toString(user.xp).length(), sb);
                 sb.append(user.xp).append(" / 960");
             }
