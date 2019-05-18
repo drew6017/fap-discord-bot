@@ -504,14 +504,20 @@ public class Commands {
                         PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata ORDER BY (server_xp + server_level * 960) DESC LIMIT 5"); // note: this does not factor in prestige because I havent added anything for that. TODO later
                         ResultSet rs = ps.executeQuery();
                         StringBuilder sb = new StringBuilder();
-                        sb.append("Leaderboard for Server Level:");
-                        int i = 1;
+                        sb.append("Leaderboard for Server Level:\n");
+                        sb.append("-------------------------------");
+                        List<LeaderboardUser> leaderboardUsers = new ArrayList<>();
+                        int longestName = 0;
                         while (rs.next()) {
                             Member member = guild.getMemberById(rs.getLong(1));
-                            sb.append("\n**").append(i++).append(". ");
-                            if (member == null) sb.append("<left>"); else sb.append(member.getEffectiveName());
-                            sb.append("** Level: ").append(rs.getShort(2)).append("      ").append("Xp: ").append(rs.getLong(5)).append(" / 960");
+                            String name;
+                            if (member == null) name = "<left>"; else name = member.getEffectiveName();
+                            int nameLength = name.length();
+                            if (nameLength > longestName) longestName = nameLength;
+                            leaderboardUsers.add(new LeaderboardUser(name, rs.getShort(2), rs.getLong(5)));
                         }
+                        prepareFromList(sb, leaderboardUsers, longestName);
+
                         rs.close();
                         ps.close();
                         respond(event, sb.toString());
@@ -540,7 +546,38 @@ public class Commands {
                     e.printStackTrace();
                     respond(event, "Sorry, the database is currently down. Try again later.");
                 }
-            } else respond(event, String.format("Invalid syntax, the correct usage is %sxp <server:gamer>", FapBot.PREFIX));
+            } else respond(event, String.format("Invalid syntax, the correct usage is %slb <server:gamer>", FapBot.PREFIX));
+        }
+
+        private class LeaderboardUser {
+
+            private String name;
+            private short level;
+            private long xp;
+
+            public LeaderboardUser(String name, short level, long xp) {
+                this.name = name;
+                this.level = level;
+                this.xp = xp;
+            }
+        }
+
+        private void prepareFromList(StringBuilder sb, List<LeaderboardUser> leaderboardUsers, int longestName) {
+            int i = 1;
+            longestName++;
+            for (LeaderboardUser user : leaderboardUsers) {
+                sb.append("\n**").append(i++).append(". ").append(user.name).append("**");
+                addSpaces(longestName - user.name.length(), sb);
+                sb.append("Level: ");
+                addSpaces(4 - Short.toString(user.level).length(), sb); // can add at minimum 1 space (level 100 -> length of 3 -> 4-3 = 1
+                sb.append(user.level).append("     ").append("Xp: ");
+                addSpaces(3 - Long.toString(user.xp).length(), sb);
+                sb.append(user.xp).append(" / 960");
+            }
+        }
+
+        private void addSpaces(int spaces, StringBuilder sb) {
+            for (int i = 0;i<spaces;i++) sb.append(" ");
         }
 
         @Override
