@@ -501,43 +501,14 @@ public class Commands {
                     Guild guild = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID);
                     if (args[1].equalsIgnoreCase("server")) {
                         // lists top 5 for server level
-                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata ORDER BY (server_xp + server_level * 960) DESC LIMIT 5"); // note: this does not factor in prestige because I havent added anything for that. TODO later
-                        ResultSet rs = ps.executeQuery();
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("Leaderboard for Server Level:```\n");
-                        List<LeaderboardUser> leaderboardUsers = new ArrayList<>();
-                        int longestName = 0;
-                        while (rs.next()) {
-                            Member member = guild.getMemberById(rs.getLong(1));
-                            String name;
-                            if (member == null) name = "<left>"; else name = member.getEffectiveName();
-                            int nameLength = name.length();
-                            if (nameLength > longestName) longestName = nameLength;
-                            leaderboardUsers.add(new LeaderboardUser(name, rs.getShort(2), rs.getLong(5)));
-                        }
-                        prepareFromList(sb, leaderboardUsers, longestName);
-
-                        rs.close();
-                        ps.close();
-                        sb.append("```");
+                        // note: this does not factor in prestige because I havent added anything for that. TODO later
+                        StringBuilder sb = prepareFromStatement(conn.prepareStatement("SELECT * FROM leveldata ORDER BY (server_xp + server_level * 960) DESC LIMIT 5"), guild, LevelSystem.Level.SERVER, 2, 5);
                         respond(event, sb.toString());
 
                     } else
                     if (args[1].equalsIgnoreCase("gamer")) {
                         // lists top 5 for gamer level
-                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata ORDER BY game_xp DESC LIMIT 5");
-                        ResultSet rs = ps.executeQuery();
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("Leaderboard for Gamer Level:");
-                        int i = 1;
-                        while (rs.next()) {
-                            Member member = guild.getMemberById(rs.getLong(1));
-                            sb.append("\n**").append(i++).append(". ");
-                            if (member == null) sb.append("<left>"); else sb.append(member.getEffectiveName());
-                            sb.append("** Level: ").append(rs.getShort(3)).append("      ").append("Xp: ").append(NumberFormat.getNumberInstance().format(rs.getLong(6))).append(" / 96,000");
-                        }
-                        rs.close();
-                        ps.close();
+                        StringBuilder sb = prepareFromStatement(conn.prepareStatement("SELECT * FROM leveldata ORDER BY game_xp DESC LIMIT 5"), guild, LevelSystem.Level.SERVER, 3, 6);
                         respond(event, sb.toString());
 
                     } else respond(event, "Please specify \"server\" or \"gamer\" to show the top people in either of these categories.");
@@ -562,9 +533,23 @@ public class Commands {
             }
         }
 
-        private void prepareFromList(StringBuilder sb, List<LeaderboardUser> leaderboardUsers, int longestName) {
+        private StringBuilder prepareFromStatement(PreparedStatement ps, Guild guild, LevelSystem.Level level, int i1, int i2) throws SQLException {
+            ResultSet rs = ps.executeQuery();
+            StringBuilder sb = new StringBuilder();
+            List<LeaderboardUser> leaderboardUsers = new ArrayList<>();
+            int longestName = 0;
+            while (rs.next()) {
+                Member member = guild.getMemberById(rs.getLong(1));
+                String name;
+                if (member == null) name = "<left>"; else name = member.getEffectiveName();
+                int nameLength = name.length();
+                if (nameLength > longestName) longestName = nameLength;
+                leaderboardUsers.add(new LeaderboardUser(name, rs.getShort(i1), rs.getLong(i2)));
+            }
+
             int i = 1;
             longestName++;
+            sb.append("Leaderboard for ").append(level == LevelSystem.Level.SERVER ? "Server" : "Gamer").append(" Level:```\n");
             for (LeaderboardUser user : leaderboardUsers) {
                 sb.append("\n").append(i++).append(". ").append(user.name);
                 addSpaces(longestName - user.name.length(), sb);
@@ -572,9 +557,20 @@ public class Commands {
                 sb.append(user.level);
                 addSpaces(8 - Long.toString(user.level).length(), sb);
                 sb.append("Xp: ");
-                addSpaces(3 - Long.toString(user.xp).length(), sb);
-                sb.append(user.xp).append(" / 960");
+                if (level == LevelSystem.Level.SERVER) {
+                    addSpaces(3 - Long.toString(user.xp).length(), sb);
+                    sb.append(user.xp).append(" / 960");
+                } else {
+                    String xpFormatted = NumberFormat.getNumberInstance().format(user.xp);
+                    addSpaces(6 - xpFormatted.length(), sb);
+                    sb.append(xpFormatted).append(" / 96,000");
+                }
             }
+            sb.append("```");
+
+            rs.close();
+            ps.close();
+            return sb;
         }
 
         private void addSpaces(int spaces, StringBuilder sb) {
