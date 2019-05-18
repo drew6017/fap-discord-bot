@@ -50,23 +50,22 @@ public class LevelSystem implements Runnable {
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             try {
                 Connection conn = DB.getConnection();
-                PreparedStatement ps = conn.prepareStatement("SELECT discord_id,game_xp,server_xp FROM leveldata WHERE discord_id=?");
+                PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata WHERE discord_id=?");
                 ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-
-                } else throw new SQLException("Did not find user by provided discord id.");
+                if (!rs.next()) throw new SQLException("Did not find user by provided discord id.");
                 long game_xp = rs.getLong("game_xp");
                 long server_xp = rs.getLong("server_xp");
+                int gamer_level = (int)rs.getShort("gamer_level");
                 rs.close();
                 ps.close();
                 conn.close();
                 if (level_type == Level.SERVER) {
-                    ImageIO.write(prepareImage(member, trigger_level, game_xp, server_xp), "png", bao);
+                    ImageIO.write(prepareImage(member, trigger_level, gamer_level, game_xp, server_xp), "png", bao);
                 } else {
-                    ImageIO.write(prepareImage(member, (int)level, game_xp, server_xp), "png", bao);
+                    ImageIO.write(prepareImage(member, (int)level, gamer_level, game_xp, server_xp), "png", bao);
                 }
             } catch (IOException | SQLException | FontFormatException e) {
-                System.err.println("Could not render image to user " + member.getEffectiveName() + "'s level up message.");
+                System.err.println("Could not render image for user " + member.getEffectiveName() + "'s level up message.");
                 e.printStackTrace();
                 return;
             }
@@ -252,7 +251,7 @@ public class LevelSystem implements Runnable {
         });
     }
 
-    public BufferedImage prepareImage(Member member, int level, long gamer_xp, long server_xp) throws IOException, FontFormatException {
+    public BufferedImage prepareImage(Member member, int level, int gamerlevel, long gamer_xp, long server_xp) throws IOException, FontFormatException {
         BufferedImage img = ImageIO.read(getClass().getResource("/com/divisionind/fdb/assets/level-up-template.png"));
         Graphics g = img.getGraphics();
         Graphics2D g2d = (Graphics2D)g;
@@ -261,15 +260,13 @@ public class LevelSystem implements Runnable {
 
         // server_xp bar
         g2d.setColor(new Color(0, 118, 177));
-        BigDecimal bd = new BigDecimal(server_xp).divide(new BigDecimal(960), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
+        BigDecimal bd = new BigDecimal(server_xp).divide(new BigDecimal(96000), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
         g2d.fillRect(214, 34, bd.intValue(), 10);
 
         // gamer_xp bar
         g2d.setColor(new Color(34, 227, 0));
         bd = new BigDecimal(gamer_xp).divide(new BigDecimal(96000), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
-        int bdint = bd.intValue();
-        if (bdint > MAX_XP_BAR_LENGTH) bdint = MAX_XP_BAR_LENGTH;
-        g2d.fillRect(214, 44, bdint, 10);
+        g2d.fillRect(214, 44, bd.intValue(), 10);
 
         // users name
         g2d.setColor(Color.WHITE);
@@ -277,20 +274,17 @@ public class LevelSystem implements Runnable {
         g2d.setFont(font.deriveFont(70F));
         g2d.drawString(member.getEffectiveName(), 214, 150);
 
-        // level
+        // server level
         g2d.setColor(new Color(249, 204, 4));
         g2d.setFont(font.deriveFont(60F));
         String slevel = Integer.toString(level);
+        g2d.drawString(slevel, 102 - g2d.getFontMetrics().stringWidth(slevel) / 2, 140);
 
-        // im too lazy to calculate the width of the string and center it right now. maybe later
-        if (level == 100) {
-            g2d.drawString(slevel, 55, 140);
-        } else
-        if (level < 100 && level > 9) {
-            g2d.drawString(slevel, 67, 140);
-        } else {
-            g2d.drawString(slevel, 85, 140);
-        }
+        // gamer level
+        g2d.setColor(new Color(0, 119, 73));
+        g2d.setFont(font.deriveFont(45F));
+        String glevel = Integer.toString(gamerlevel);
+        g2d.drawString(glevel, 812 - g2d.getFontMetrics().stringWidth(glevel), 187);
 
         return img;
     }

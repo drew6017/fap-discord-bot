@@ -465,7 +465,7 @@ public class Commands {
                     conn.close();
 
                     ByteArrayOutputStream bao = new ByteArrayOutputStream();
-                    ImageIO.write(FapBot.getLevelSystem().prepareImage(member, server_level, game_xp, server_xp), "png", bao);
+                    ImageIO.write(FapBot.getLevelSystem().prepareImage(member, server_level, gamer_level, game_xp, server_xp), "png", bao);
                     event.getChannel().sendFile(bao.toByteArray(), "faplevel.png", new MessageBuilder(
                             String.format("**Server Level: ** %s\n**Server Xp:** %s / 960\n**Gamer Level:** %s\n**Gamer Xp:** %s / 96,000\n**Prestige:** %s",
                                     server_level, server_xp, gamer_level, NumberFormat.getNumberInstance().format(game_xp), prestige
