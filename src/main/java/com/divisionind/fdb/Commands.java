@@ -17,6 +17,7 @@ package com.divisionind.fdb;
 
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -485,6 +486,71 @@ public class Commands {
         @Override
         public String desc() {
             return "shows your current xp/level statistics";
+        }
+    }
+
+    protected static class Leaderboard extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            if (args.length == 1) {
+                respond(event, String.format("Invalid syntax, the correct usage is %sxp <server:gamer>", FapBot.PREFIX));
+            } else
+            if (args.length == 2) {
+                try {
+                    Connection conn = DB.getConnection();
+                    Guild guild = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID);
+                    if (args[1].equalsIgnoreCase("server")) {
+                        // lists top 5 for server level
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata ORDER BY (server_xp + server_level * 960) DESC LIMIT 5"); // note: this does not factor in prestige because I havent added anything for that. TODO later
+                        ResultSet rs = ps.executeQuery();
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Leaderboard for Server Level:");
+                        int i = 1;
+                        while (rs.next()) {
+                            Member member = guild.getMemberById(rs.getLong(1));
+                            sb.append("\n**").append(i++).append(". ");
+                            if (member == null) sb.append("<left>"); else sb.append(member.getEffectiveName());
+                            sb.append("** Level: ").append(rs.getShort(2)).append("      ").append("Xp: ").append(rs.getLong(5)).append(" / 960");
+                        }
+                        rs.close();
+                        ps.close();
+                        respond(event, sb.toString());
+
+                    } else
+                    if (args[1].equalsIgnoreCase("gamer")) {
+                        // lists top 5 for gamer level
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata ORDER BY game_xp DESC LIMIT 5");
+                        ResultSet rs = ps.executeQuery();
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Leaderboard for Gamer Level:");
+                        int i = 1;
+                        while (rs.next()) {
+                            Member member = guild.getMemberById(rs.getLong(1));
+                            sb.append("\n**").append(i++).append(". ");
+                            if (member == null) sb.append("<left>"); else sb.append(member.getEffectiveName());
+                            sb.append("** Level: ").append(rs.getShort(3)).append("      ").append("Xp: ").append(NumberFormat.getNumberInstance().format(rs.getLong(6))).append(" / 96,000");
+                        }
+                        rs.close();
+                        ps.close();
+                        respond(event, sb.toString());
+
+                    } else respond(event, "Please specify \"server\" or \"gamer\" to show the top people in either of these categories.");
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    respond(event, "Sorry, the database is currently down. Try again later.");
+                }
+            } else respond(event, String.format("Invalid syntax, the correct usage is %sxp <server:gamer>", FapBot.PREFIX));
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"leaderboard", "lb"};
+        }
+
+        @Override
+        public String desc() {
+            return "shows a list of the top five people based on server or gamer level";
         }
     }
 }

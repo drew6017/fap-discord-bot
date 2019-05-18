@@ -70,7 +70,8 @@ public class FapBot {
                 new Commands.PrivateMessage(),
                 new Commands.When(),
                 new Commands.SetPlaying(),
-                new Commands.Xp());
+                new Commands.Xp(),
+                new Commands.Leaderboard());
 
         // start JDA
         try {
