@@ -568,7 +568,7 @@ public class Commands {
             for (LeaderboardUser user : leaderboardUsers) {
                 sb.append("\n**").append(i++).append(". ").append(user.name).append("**");
                 addSpaces(longestName - user.name.length(), sb);
-                sb.append("Level: ");
+                sb.append("Level:");
                 addSpaces(4 - Short.toString(user.level).length(), sb); // can add at minimum 1 space (level 100 -> length of 3 -> 4-3 = 1
                 sb.append(user.level).append("     ").append("Xp: ");
                 addSpaces(3 - Long.toString(user.xp).length(), sb);
@@ -577,7 +577,7 @@ public class Commands {
         }
 
         private void addSpaces(int spaces, StringBuilder sb) {
-            for (int i = 0;i<spaces;i++) sb.append(" ");
+            for (int i = 0;i<spaces;i++) sb.append("-");
         }
 
         @Override
