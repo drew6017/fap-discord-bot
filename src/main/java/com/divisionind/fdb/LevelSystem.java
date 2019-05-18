@@ -260,7 +260,7 @@ public class LevelSystem implements Runnable {
 
         // server_xp bar
         g2d.setColor(new Color(0, 118, 177));
-        BigDecimal bd = new BigDecimal(server_xp).divide(new BigDecimal(96000), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
+        BigDecimal bd = new BigDecimal(server_xp).divide(new BigDecimal(960), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
         g2d.fillRect(214, 34, bd.intValue(), 10);
 
         // gamer_xp bar
