@@ -504,8 +504,8 @@ public class Commands {
                         // lists top 5 for server level
                         PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata ORDER BY (server_xp + server_level * 960) DESC LIMIT 5"); // note: this does not factor in prestige because I havent added anything for that. TODO later
                         ResultSet rs = ps.executeQuery();
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("Leaderboard for Server Level:\n");
+                        //StringBuilder sb = new StringBuilder();
+                        //sb.append("Leaderboard for Server Level:\n");
                         Table.Builder builder = new Table.Builder()
                                 .withAlignments(Table.ALIGN_CENTER, Table.ALIGN_CENTER, Table.ALIGN_CENTER)
                                 .addRow("Name", "Level", "Xp ( / 960)");
@@ -515,11 +515,12 @@ public class Commands {
                             if (member == null) name = "<left>"; else name = member.getEffectiveName();
                             builder.addRow(name, rs.getShort(2), rs.getLong(5));
                         }
-                        sb.append(builder.build().serialize());
+                        //sb.append(builder.build().serialize());
 
                         rs.close();
                         ps.close();
-                        respond(event, sb.toString());
+                        //respond(event, sb.toString());
+                        respond(event, builder.build().serialize());
 
                     } else
                     if (args[1].equalsIgnoreCase("gamer")) {
