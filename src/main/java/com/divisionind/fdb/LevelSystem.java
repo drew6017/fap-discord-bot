@@ -83,13 +83,16 @@ public class LevelSystem implements Runnable {
         milestones.put(90, incrementOf10);
         milestones.put(100, (member, level_type, level, trigger_level) -> {
             long role = 0;
+            String rank = null;
             if (level_type == Level.GAMER) {
                 // promote to Master Gamer
                 role = FapBot.ROLE_ID_MASTER_GAMER;
+                rank = "Mastur Gamer";
             } else
             if (level_type == Level.SERVER) {
                 // promote to Verified Fat Cock
                 role = FapBot.ROLE_ID_VERIFIED_FAT_COCK;
+                rank = "Verified Fat Cock";
             }
             if (role != 0) {
                 for (Role r : member.getRoles()) {
@@ -97,6 +100,7 @@ public class LevelSystem implements Runnable {
                 }
 
                 member.getGuild().getController().addSingleRoleToMember(member, member.getGuild().getRoleById(role)).queue(); // maybe add .reason() here
+                member.getGuild().getTextChannelById(FapBot.DISCORD_MAIN_TC_ID).sendMessage(String.format("@everyone %s just became a %s for reaching a %s level of 100!", member.getEffectiveName(), rank, level_type.name().toLowerCase())).queue();
             }
         });
     }
