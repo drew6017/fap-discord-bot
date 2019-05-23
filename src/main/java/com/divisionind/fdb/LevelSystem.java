@@ -40,8 +40,12 @@ public class LevelSystem implements Runnable {
     private static final double BASE_SERVER_POINTS_PM = 2;
     private static final double SERVER_POINTS_MULTIPLIER = 0.5; // effective multiplier (2 players = 1x, 4 players = 2x)
     private static final int MAX_XP_BAR_LENGTH = 534;
-
     private static final HashMap<Integer, MilestoneEvent> milestones = new HashMap<>();
+    private static final String RANK_QUERY = "SET @rnum := 0;" +
+                                       "SELECT rank FROM (" +
+                                         "SELECT %s, discord_id, @rnum := @rnum + 1 AS rank" +
+                                         "FROM leveldata ORDER BY %s DESC" +
+                                       ") AS lul WHERE discord_id=?"; // lul is here cause i couldnt get rank() to work and this wouldnt work without it here for some reason
 
     public LevelSystem() {
         MilestoneEvent incrementOf10 = (member, level_type, level, trigger_level) -> {
@@ -145,6 +149,39 @@ public class LevelSystem implements Runnable {
 
     public void awardPoints(Member member, Level level, long points) throws SQLException {
         awardPoints(member, level, points, false);
+    }
+
+    public long getRank(Level level, long discord_id) throws SQLException {
+        Connection conn = DB.getConnection();
+
+        String fromCols;
+        String orderer;
+
+        if (level.equals(Level.GAMER)) {
+            orderer = fromCols = "game_xp";
+        } else
+        if (level.equals(Level.SERVER)) {
+            fromCols = "server_xp, server_level";
+            orderer = "(server_xp + server_level * 960)";
+        } else {
+            conn.close();
+            throw new SQLException("Invalid level type. Must be gamer or server.");
+        }
+
+        PreparedStatement ps = conn.prepareStatement(String.format(RANK_QUERY, fromCols, orderer));
+        ps.setLong(1, discord_id);
+        ResultSet rs = ps.executeQuery();
+        long rank;
+        if (rs.next()) {
+            rank = rs.getLong("rank");
+        } else {
+            // user was not in db, therefore had no rank
+            rank = -1;
+        }
+        rs.close();
+        ps.close();
+        conn.close();
+        return rank;
     }
 
     private void awardPoints(Member member, Level level, long points, boolean recursive) throws SQLException {

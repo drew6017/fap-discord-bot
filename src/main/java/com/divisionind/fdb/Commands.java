@@ -449,30 +449,32 @@ public class Commands {
 
         private void sendStats(MessageReceivedEvent event, User user) {
             Member member = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getMember(user);
+            long discord_id = user.getIdLong();
             try {
                 Connection conn = DB.getConnection();
                 PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata WHERE discord_id=?");
-                ps.setLong(1, user.getIdLong());
+                ps.setLong(1, discord_id);
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
                     short server_level = rs.getShort("server_level");
                     short gamer_level = rs.getShort("gamer_level");
-                    short prestige = rs.getShort("prestige");
                     long server_xp = rs.getLong("server_xp");
                     long game_xp = rs.getLong("game_xp");
-                    rs.close();
-                    ps.close();
-                    conn.close();
 
                     ByteArrayOutputStream bao = new ByteArrayOutputStream();
                     ImageIO.write(FapBot.getLevelSystem().prepareImage(member, server_level, gamer_level, game_xp, server_xp), "png", bao);
+                    NumberFormat numFor = NumberFormat.getNumberInstance();
+                    LevelSystem levelSystem = FapBot.getLevelSystem();
                     event.getChannel().sendFile(bao.toByteArray(), "faplevel.png", new MessageBuilder(
-                            String.format("**Server Level: ** %s\n**Server Xp:** %s / 960\n**Gamer Level:** %s\n**Gamer Xp:** %s / 96,000\n**Prestige:** %s",
-                                    server_level, server_xp, gamer_level, NumberFormat.getNumberInstance().format(game_xp), prestige
+                            String.format("**Server Level: ** %s\n**Server Xp:** %s / 960\n**Gamer Level:** %s\n**Gamer Xp:** %s / 96,000\n**Server Rank:** #%s\n**Gamer Rank:** #%s",
+                                    server_level, server_xp, gamer_level, numFor.format(game_xp), numFor.format(levelSystem.getRank(LevelSystem.Level.SERVER, discord_id)), numFor.format(levelSystem.getRank(LevelSystem.Level.GAMER, discord_id))
                             )).build()).queue();
                 } else {
                     respond(event, "You do not have a level. Go play games or chat with some people from FAP to gain xp and level up.");
                 }
+                rs.close();
+                ps.close();
+                conn.close();
             } catch (SQLException | IOException | FontFormatException e) {
                 respond(event, "Oops, sorry about that. We seem to be having technical difficulties. Please try again later.");
             }
