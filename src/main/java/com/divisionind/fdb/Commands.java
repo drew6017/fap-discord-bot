@@ -466,7 +466,7 @@ public class Commands {
                     NumberFormat numFor = NumberFormat.getNumberInstance();
                     LevelSystem levelSystem = FapBot.getLevelSystem();
                     event.getChannel().sendFile(bao.toByteArray(), "faplevel.png", new MessageBuilder(
-                            String.format("**Server Level: ** %s\n**Server Xp:** %s / 960\n**Server Rank:** #%s\n**Gamer Level:** %s\n**Gamer Xp:** %s / 96,000\n**Gamer Rank:** #%s",
+                            String.format("**Server Level: ** %s\n**Server Xp:** %s / 960\n**Server Rank:** #%s\n\n**Gamer Level:** %s\n**Gamer Xp:** %s / 96,000\n**Gamer Rank:** #%s",
                                     server_level, server_xp, numFor.format(levelSystem.getRank(LevelSystem.Level.SERVER, discord_id)), gamer_level, numFor.format(game_xp), numFor.format(levelSystem.getRank(LevelSystem.Level.GAMER, discord_id))
                             )).build()).queue();
                 } else {
