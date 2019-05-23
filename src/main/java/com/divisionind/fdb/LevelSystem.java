@@ -45,7 +45,7 @@ public class LevelSystem implements Runnable {
                                        "SELECT rank FROM (" +
                                          "SELECT %s, discord_id, @rnum := @rnum + 1 AS rank " +
                                          "FROM leveldata ORDER BY %s DESC" +
-                                       ") AS lul WHERE discord_id=?"; // lul is here cause i couldnt get rank() to work and this wouldnt work without it here for some reason
+                                       ") AS lul WHERE discord_id=%s"; // lul is here cause i couldnt get rank() to work and this wouldnt work without it here for some reason
 
     public LevelSystem() {
         MilestoneEvent incrementOf10 = (member, level_type, level, trigger_level) -> {
@@ -168,8 +168,7 @@ public class LevelSystem implements Runnable {
             throw new SQLException("Invalid level type. Must be gamer or server.");
         }
 
-        PreparedStatement ps = conn.prepareStatement(String.format(RANK_QUERY, fromCols, orderer));
-        ps.setLong(1, discord_id);
+        PreparedStatement ps = conn.prepareStatement(String.format(RANK_QUERY, fromCols, orderer, discord_id));
         ResultSet rs = ps.executeQuery();
         long rank;
         if (rs.next()) {
