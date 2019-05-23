@@ -27,10 +27,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,11 +38,10 @@ public class LevelSystem implements Runnable {
     private static final double SERVER_POINTS_MULTIPLIER = 0.5; // effective multiplier (2 players = 1x, 4 players = 2x)
     private static final int MAX_XP_BAR_LENGTH = 534;
     private static final HashMap<Integer, MilestoneEvent> milestones = new HashMap<>();
-    private static final String RANK_QUERY = "SET @rnum := 0;" +
-                                       "SELECT rank FROM (" +
-                                         "SELECT %s, discord_id, @rnum := @rnum + 1 AS rank " +
-                                         "FROM leveldata ORDER BY %s DESC" +
-                                       ") AS lul WHERE discord_id=%s"; // lul is here cause i couldnt get rank() to work and this wouldnt work without it here for some reason
+    private static final String RANK_QUERY = "SELECT rank FROM (" +
+                                               "SELECT %s, discord_id, @rnum := @rnum + 1 AS rank " +
+                                               "FROM leveldata ORDER BY %s DESC" +
+                                             ") AS lul WHERE discord_id=%s"; // lul is here cause i couldnt get rank() to work and this wouldnt work without it here for some reason
 
     public LevelSystem() {
         MilestoneEvent incrementOf10 = (member, level_type, level, trigger_level) -> {
@@ -168,8 +164,10 @@ public class LevelSystem implements Runnable {
             throw new SQLException("Invalid level type. Must be gamer or server.");
         }
 
-        PreparedStatement ps = conn.prepareStatement(String.format(RANK_QUERY, fromCols, orderer, discord_id));
-        ResultSet rs = ps.executeQuery();
+
+        Statement stmt = conn.createStatement();
+        stmt.execute("SET @rnum := 0");
+        ResultSet rs = stmt.executeQuery(String.format(RANK_QUERY, fromCols, orderer, discord_id));
         long rank;
         if (rs.next()) {
             rank = rs.getLong("rank");
@@ -178,7 +176,7 @@ public class LevelSystem implements Runnable {
             rank = -1;
         }
         rs.close();
-        ps.close();
+        stmt.close();
         conn.close();
         return rank;
     }
