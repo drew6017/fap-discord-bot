@@ -43,7 +43,7 @@ public class LevelSystem implements Runnable {
     private static final HashMap<Integer, MilestoneEvent> milestones = new HashMap<>();
     private static final String RANK_QUERY = "SET @rnum := 0;" +
                                        "SELECT rank FROM (" +
-                                         "SELECT %s, discord_id, @rnum := @rnum + 1 AS rank" +
+                                         "SELECT %s, discord_id, @rnum := @rnum + 1 AS rank " +
                                          "FROM leveldata ORDER BY %s DESC" +
                                        ") AS lul WHERE discord_id=?"; // lul is here cause i couldnt get rank() to work and this wouldnt work without it here for some reason
 
