@@ -324,6 +324,8 @@ public class LevelSystem implements Runnable {
         String glevel = Integer.toString(gamerlevel);
         g2d.drawString(glevel, 812 - g2d.getFontMetrics().stringWidth(glevel), 187);
 
+        FapBot.log.info(member.getUser().getEffectiveAvatarUrl()); // for testing reasons
+
         return img;
     }
 
