@@ -450,11 +450,14 @@ public class Commands {
         private void sendStats(MessageReceivedEvent event, User user) {
             Member member = FapBot.getJDA().getGuildById(FapBot.DISCORD_GUILD_ID).getMember(user);
             long discord_id = user.getIdLong();
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
             try {
-                Connection conn = DB.getConnection();
-                PreparedStatement ps = conn.prepareStatement("SELECT * FROM leveldata WHERE discord_id=?");
+                conn = DB.getConnection();
+                ps = conn.prepareStatement("SELECT * FROM leveldata WHERE discord_id=?");
                 ps.setLong(1, discord_id);
-                ResultSet rs = ps.executeQuery();
+                rs = ps.executeQuery();
                 if (rs.next()) {
                     short server_level = rs.getShort("server_level");
                     short gamer_level = rs.getShort("gamer_level");
@@ -478,6 +481,16 @@ public class Commands {
             } catch (SQLException | IOException | FontFormatException e) {
                 e.printStackTrace();
                 respond(event, "Oops, sorry about that. We seem to be having technical difficulties. Please try again later.");
+            }
+
+            // silently try to close sql stuff
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                FapBot.log.warning("An error occurred trying to close SQL stuff in the xp command.");
+                e.printStackTrace();
             }
         }
 

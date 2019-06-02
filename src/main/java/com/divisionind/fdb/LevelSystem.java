@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +66,7 @@ public class LevelSystem implements Runnable {
                     ImageIO.write(prepareImage(member, (int)level, gamer_level, game_xp, server_xp), "png", bao);
                 }
             } catch (IOException | SQLException | FontFormatException e) {
-                System.err.println("Could not render image for user " + member.getEffectiveName() + "'s level up message.");
+                FapBot.log.warning("Could not render image for user " + member.getEffectiveName() + "'s level up message.");
                 e.printStackTrace();
                 return;
             }
@@ -310,13 +311,13 @@ public class LevelSystem implements Runnable {
         g2d.setColor(Color.WHITE);
         Font font = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/com/divisionind/fdb/assets/phagspab.ttf"));
         g2d.setFont(font.deriveFont(70F));
-        g2d.drawString(member.getEffectiveName(), 214, 150);
+        g2d.drawString(member.getEffectiveName(), 214, 135);
 
         // server level
-        g2d.setColor(new Color(249, 204, 4));
-        g2d.setFont(font.deriveFont(60F));
+        g2d.setColor(new Color(0, 99, 148));
+        g2d.setFont(font.deriveFont(45F));
         String slevel = Integer.toString(level);
-        g2d.drawString(slevel, 102 - g2d.getFontMetrics().stringWidth(slevel) / 2, 140);
+        g2d.drawString(slevel, 668 - g2d.getFontMetrics().stringWidth(slevel), 187);
 
         // gamer level
         g2d.setColor(new Color(0, 119, 73));
@@ -324,7 +325,56 @@ public class LevelSystem implements Runnable {
         String glevel = Integer.toString(gamerlevel);
         g2d.drawString(glevel, 812 - g2d.getFontMetrics().stringWidth(glevel), 187);
 
-        FapBot.log.info(member.getUser().getEffectiveAvatarUrl()); // for testing reasons
+        // avatar image
+        // https://cdn.discordapp.com/avatars/246069907467403264/9a227866ccdd06169c8742eff9a48a25.png returns 128x128 image
+        int scale = 170;
+        Image avatar = ImageIO.read(new URL(member.getUser().getEffectiveAvatarUrl())).getScaledInstance(scale, scale, Image.SCALE_AREA_AVERAGING);
+        g2d.drawImage(applyAlphaMask(toBufferedImage(avatar), getCircleMask(scale, scale)), 30, 111 - (scale / 2), null);
+
+        g2d.dispose();
+
+        return img;
+    }
+
+    private BufferedImage applyAlphaMask(BufferedImage image, BufferedImage mask) {
+        BufferedImage maskedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = maskedImage.createGraphics();
+
+        // draw original
+        g2.drawImage(image, 0, 0, null);
+
+        // set "masking settings"
+        AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.DST_IN, 1.0F);
+        g2.setComposite(ac);
+
+        // draw mask
+        g2.drawImage(mask, 0, 0, null);
+
+        g2.dispose();
+
+        return maskedImage;
+    }
+
+    private BufferedImage toBufferedImage(Image img) {
+        if (img instanceof BufferedImage) return (BufferedImage) img;
+        BufferedImage bi = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = bi.createGraphics();
+        g2d.drawImage(img, 0, 0, null);
+        g2d.dispose();
+
+        return bi;
+    }
+
+    private BufferedImage getCircleMask(int imageSize, int circleSize) {
+        BufferedImage img = new BufferedImage(imageSize, imageSize, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = (Graphics2D)img.getGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // draw circle
+        g2d.setColor(Color.BLACK);
+        g2d.fillOval(0, 0, circleSize, circleSize);
+        g2d.dispose();
 
         return img;
     }
