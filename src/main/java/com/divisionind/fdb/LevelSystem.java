@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.*;
 import java.util.HashMap;
@@ -327,8 +328,13 @@ public class LevelSystem implements Runnable {
 
         // avatar image
         // https://cdn.discordapp.com/avatars/246069907467403264/9a227866ccdd06169c8742eff9a48a25.png returns 128x128 image
+        // note: discord started throwing a 403 so I changed the agent
+        URL url = new URL(member.getUser().getEffectiveAvatarUrl());
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0");
+
         int scale = 170;
-        Image avatar = ImageIO.read(new URL(member.getUser().getEffectiveAvatarUrl())).getScaledInstance(scale, scale, Image.SCALE_AREA_AVERAGING);
+        Image avatar = ImageIO.read(conn.getInputStream()).getScaledInstance(scale, scale, Image.SCALE_AREA_AVERAGING);
         g2d.drawImage(applyAlphaMask(toBufferedImage(avatar), getCircleMask(scale, scale)), 30, 111 - (scale / 2), null);
 
         g2d.dispose();
