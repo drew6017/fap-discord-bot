@@ -1,4 +1,4 @@
-# FapBot
+# FapBot ![](https://img.shields.io/discord/425464794368442371.svg?style=flat-square)
 #### &copy; Division Industries LLC
 
 ## Installation / Testing
