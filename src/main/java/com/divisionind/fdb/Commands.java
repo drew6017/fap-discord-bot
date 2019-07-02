@@ -661,4 +661,21 @@ public class Commands {
             return true;
         }
     }
+
+    protected static class Teamspeak extends ACommand {
+        @Override
+        public void execute(MessageReceivedEvent event, String[] args) {
+            respond(event, "Click here to join the official TeamSpeak server: https://divisionind.com/ts3\nIf you know what you are doing and want to skip right to it, the server address is this: **ts3.divisionind.com**");
+        }
+
+        @Override
+        public String[] aliases() {
+            return new String[] {"teamspeak", "ts"};
+        }
+
+        @Override
+        public String desc() {
+            return "shows the offical teamspeak server address";
+        }
+    }
 }
