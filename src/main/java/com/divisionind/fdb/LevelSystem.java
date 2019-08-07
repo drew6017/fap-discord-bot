@@ -210,7 +210,7 @@ public class LevelSystem implements Runnable {
                         ps.executeUpdate();
                         ps.close();
                         conn.close();
-                        //awardMilestones(member, level, old_gamer_level, new_gamer_level);
+                        awardMilestones(member, level, old_gamer_level, new_gamer_level);
                         return;
                     }
                 }
@@ -305,6 +305,7 @@ public class LevelSystem implements Runnable {
 
         // gamer_xp bar
         g2d.setColor(new Color(34, 227, 0));
+        if (gamer_xp > 96000) gamer_xp = 96000; // ensures the bar does not exceed the image
         bd = new BigDecimal(gamer_xp).divide(new BigDecimal(96000), 2, RoundingMode.HALF_UP).multiply(new BigDecimal(MAX_XP_BAR_LENGTH));
         g2d.fillRect(214, 44, bd.intValue(), 10);
 
