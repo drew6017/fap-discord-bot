@@ -87,7 +87,6 @@ public class FapBot {
                     .setActivity(Activity.playing(String.format("%shelp", PREFIX)))
                     .setCompression(Compression.ZLIB)
                     .setLargeThreshold(250)
-                    .enableCache(Arrays.asList(CacheFlag.values()))         // cache all
 //                    .enableIntents(Arrays.asList(GatewayIntent.values())) // just enable all intents (CANT, DO NOT HAVE PERMISSION)
                     .build();
 
