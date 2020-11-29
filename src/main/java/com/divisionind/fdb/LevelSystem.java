@@ -15,9 +15,9 @@
 
 package com.divisionind.fdb;
 
-import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.OnlineStatus;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.utils.AttachmentOption;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -71,7 +71,9 @@ public class LevelSystem implements Runnable {
                 e.printStackTrace();
                 return;
             }
-            tc.sendFile(bao.toByteArray(), "faplevelup.png", new MessageBuilder(member.getEffectiveName() + " just leveled up their " + level_type.name().toLowerCase() + " level!").build()).queue();
+            tc.sendFile(bao.toByteArray(), "faplevelup.png", new AttachmentOption[0])
+                    .append(member.getEffectiveName() + " just leveled up their " + level_type.name().toLowerCase() + " level!")
+                    .queue();
         };
 
         milestones.put(10, incrementOf10);
@@ -101,7 +103,7 @@ public class LevelSystem implements Runnable {
                     if (r.getIdLong() == role) return;
                 }
 
-                member.getGuild().getController().addSingleRoleToMember(member, member.getGuild().getRoleById(role)).queue(); // maybe add .reason() here
+                member.getGuild().addRoleToMember(member, member.getGuild().getRoleById(role)).queue(); // maybe add .reason() here
                 member.getGuild().getTextChannelById(FapBot.DISCORD_MAIN_TC_ID).sendMessage(String.format("@everyone %s just became a %s for reaching a %s level of 100!", member.getEffectiveName(), rank, level_type.name().toLowerCase())).queue();
             }
         });
@@ -115,7 +117,7 @@ public class LevelSystem implements Runnable {
             User u = m.getUser();
             if (u.isBot()) continue;
             if (m.getOnlineStatus() == OnlineStatus.OFFLINE) continue;
-            if (m.getGame() != null) {
+            if (m.getActivities().size() != 0) {
                 // award points -> Gamer Level
                 try {
                     awardPoints(m, Level.GAMER, BASE_GAMER_POINTS_PM);

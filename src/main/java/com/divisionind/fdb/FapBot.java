@@ -16,9 +16,11 @@
 package com.divisionind.fdb;
 
 import com.divisionind.fdb.scheduler.AtomicScheduler;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.Compression;
 
 import javax.security.auth.login.LoginException;
 import java.net.URI;
@@ -78,18 +80,23 @@ public class FapBot {
 
         // start JDA
         try {
-            jda = new JDABuilder()
-                    .setToken(TOKEN)
-                    .addEventListener(new BotEvent())
+            jda = JDABuilder.createDefault(TOKEN)
+                    .addEventListeners(new BotEvent())
                     .setAutoReconnect(true)
+                    .setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, String.format("type %shelp for help!", PREFIX)))
+                    .setCompression(Compression.ZLIB)
+                    .setLargeThreshold(250)
+                    .enableIntents(Arrays.asList(GatewayIntent.values())) // just enable all intents
                     .build();
-        } catch (LoginException e) {
+
+            jda.awaitReady(); // wait
+        } catch (LoginException | InterruptedException e) {
             log.severe("An error occurred when attempting to login");
             jda = null;
             e.printStackTrace();
         }
 
-        jda.getPresence().setGame(Game.playing(String.format("%shelp", PREFIX)));
+//        jda.getPresence().setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, String.format("type %shelp", PREFIX)));
 
         log.info("Creating shutdown hook...");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

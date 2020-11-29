@@ -15,13 +15,13 @@
 
 package com.divisionind.fdb;
 
-import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.core.managers.Presence;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.managers.Presence;
+import net.dv8tion.jda.api.utils.AttachmentOption;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -373,21 +373,25 @@ public class Commands {
                 try {
                     if (args[1].equalsIgnoreCase("p")) {
                         readMessage(2, args, sb);
-                        presence.setGame(Game.playing(sb.toString()));
+                        presence.setActivity(Activity.playing(sb.toString()));
                     } else
                     if (args[1].equalsIgnoreCase("s")) {
                         readMessage(3, args, sb);
-                        presence.setGame(Game.streaming(sb.toString(), args[2]));
+                        presence.setActivity(Activity.streaming(sb.toString(), args[2]));
                     } else
                     if (args[1].equalsIgnoreCase("w")) {
                         readMessage(2, args, sb);
-                        presence.setGame(Game.watching(sb.toString()));
+                        presence.setActivity(Activity.watching(sb.toString()));
                     } else
                     if (args[1].equalsIgnoreCase("l")) {
                         readMessage(2, args, sb);
-                        presence.setGame(Game.listening(sb.toString()));
+                        presence.setActivity(Activity.listening(sb.toString()));
+                    } else
+                    if (args[1].equalsIgnoreCase("c")) {
+                        readMessage(2, args, sb);
+                        presence.setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, sb.toString()));
                     } else {
-                        respond(event, "Status code incorrect. Valid codes are: p (playing), s (streaming), w (watching), l (listening)");
+                        respond(event, "Status code incorrect. Valid codes are: p (playing), s (streaming), w (watching), l (listening), c (custom)");
                         return;
                     }
                     respond(event, "Playing message has been set.");
@@ -468,10 +472,10 @@ public class Commands {
                     ImageIO.write(FapBot.getLevelSystem().prepareImage(member, server_level, gamer_level, game_xp, server_xp), "png", bao);
                     NumberFormat numFor = NumberFormat.getNumberInstance();
                     LevelSystem levelSystem = FapBot.getLevelSystem();
-                    event.getChannel().sendFile(bao.toByteArray(), "faplevel.png", new MessageBuilder(
-                            String.format("**Server Level: ** %s\n**Server Xp:** %s / 960\n**Server Rank:** #%s\n\n**Gamer Level:** %s\n**Gamer Xp:** %s / 96,000\n**Gamer Rank:** #%s",
-                                    server_level, server_xp, numFor.format(levelSystem.getRank(LevelSystem.Level.SERVER, discord_id)), gamer_level, numFor.format(game_xp), numFor.format(levelSystem.getRank(LevelSystem.Level.GAMER, discord_id))
-                            )).build()).queue();
+                    event.getChannel().sendFile(bao.toByteArray(), "faplevel.png", new AttachmentOption[0])
+                            .append(String.format("**Server Level: ** %s\n**Server Xp:** %s / 960\n**Server Rank:** #%s\n\n**Gamer Level:** %s\n**Gamer Xp:** %s / 96,000\n**Gamer Rank:** #%s",
+                                    server_level, server_xp, numFor.format(levelSystem.getRank(LevelSystem.Level.SERVER, discord_id)), gamer_level, numFor.format(game_xp), numFor.format(levelSystem.getRank(LevelSystem.Level.GAMER, discord_id))))
+                            .queue();
                 } else {
                     respond(event, "You do not have a level. Go play games or chat with some people from FAP to gain xp and level up.");
                 }
