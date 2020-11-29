@@ -86,7 +86,7 @@ public class FapBot {
 //                    .setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, String.format("type %shelp for help!", PREFIX)))
                     .setCompression(Compression.ZLIB)
                     .setLargeThreshold(250)
-                    .enableIntents(Arrays.asList(GatewayIntent.values())) // just enable all intents
+//                    .enableIntents(Arrays.asList(GatewayIntent.values())) // just enable all intents (CANT DO NOT HAVE PERMISSION)
                     .build();
 
             jda.awaitReady(); // wait
