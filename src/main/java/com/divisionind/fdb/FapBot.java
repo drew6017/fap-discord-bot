@@ -83,7 +83,7 @@ public class FapBot {
             jda = JDABuilder.createDefault(TOKEN)
                     .addEventListeners(new BotEvent())
                     .setAutoReconnect(true)
-                    .setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, String.format("type %shelp for help!", PREFIX)))
+//                    .setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, String.format("type %shelp for help!", PREFIX)))
                     .setCompression(Compression.ZLIB)
                     .setLargeThreshold(250)
                     .enableIntents(Arrays.asList(GatewayIntent.values())) // just enable all intents
@@ -96,7 +96,7 @@ public class FapBot {
             e.printStackTrace();
         }
 
-//        jda.getPresence().setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, String.format("type %shelp", PREFIX)));
+        jda.getPresence().setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, String.format("type %shelp", PREFIX)));
 
         log.info("Creating shutdown hook...");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
