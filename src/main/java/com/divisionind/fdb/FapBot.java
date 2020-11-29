@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.Compression;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import javax.security.auth.login.LoginException;
 import java.net.URI;
@@ -86,7 +87,8 @@ public class FapBot {
                     .setActivity(Activity.playing(String.format("%shelp", PREFIX)))
                     .setCompression(Compression.ZLIB)
                     .setLargeThreshold(250)
-//                    .enableIntents(Arrays.asList(GatewayIntent.values())) // just enable all intents (CANT DO NOT HAVE PERMISSION)
+                    .enableCache(Arrays.asList(CacheFlag.values()))         // cache all
+//                    .enableIntents(Arrays.asList(GatewayIntent.values())) // just enable all intents (CANT, DO NOT HAVE PERMISSION)
                     .build();
 
             jda.awaitReady(); // wait
